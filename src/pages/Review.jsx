@@ -1,21 +1,73 @@
 import { TextInput } from "flowbite-react";
-import React from "react";
+import {React,useState,useEffect} from "react";
 import { Link } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
 import ExamList from "../components/ExamList";
 import ReportPieChart from "../components/PieChart";
+import { supabase } from "../utils/config";
+
 
 const Review = () => {
-    const data = [
-        { name: 'Correct', value: 30 },
-        { name: 'Incorrect', value: 20 },
-      ];
+  const [userData, setUserData] = useState(null);
+  const [chartData, setChartData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Fetch user data from the session
+        const { data, error } = await supabase.auth.refreshSession();
+
+        if (error) {
+          console.error('Error fetching user data:', error);
+          return;
+        }
+
+        setUserData(data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    if (userData) {
+      fetchData(userData.user.id);
+    }
+  }, [userData]);
+
+  const fetchData = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('attempted_questions')
+        .select('is_correct', { count: 'exact' })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching attempted questions data:', error);
+        return;
+      }
+
+      // Count the number of correct and wrong answers
+      const correctCount = data.filter((q) => q.is_correct).length;
+      const wrongCount = data.length - correctCount;
+
+      // Set chart data state
+      setChartData([
+        { name: 'Correct', value: correctCount },
+        { name: 'Incorrect', value: wrongCount },
+      ]);
+    } catch (error) {
+      console.error('Error fetching attempted questions data:', error);
+    }
+  };
   return (
     <div className="pt-10 px-5 md:px-19">
       <div className="border border-gray-200 p-3 rounded-md">
         <h1 className="text-2xl font-semibold my-2">User Report</h1>
         <div className="flex justify-center items-center">
-            <ReportPieChart data={data} />
+        {chartData && <ReportPieChart data={chartData} />}
         </div>
       </div>
 

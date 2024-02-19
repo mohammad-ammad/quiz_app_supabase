@@ -1,11 +1,12 @@
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import GlobalContext from '../context/GlobalContext'
+import LoginModal from "./LoginModal";
 
 const Nav = () => {
   const [isOpen, setIsOpen] = React.useState(false)
 
-  const {session, logout} = useContext(GlobalContext)
+  const { openModal, setOpenModal,session, logout} = useContext(GlobalContext)
 
   useEffect(() => {
     const mobileMenu = document.getElementById('mobile-menu')
@@ -51,7 +52,7 @@ const Nav = () => {
               Logout
             </button>
             :
-            <button type="button" className="relative inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            <button onClick={() => setOpenModal(!openModal)} className="relative inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
               🚀
               Get Started
             </button>

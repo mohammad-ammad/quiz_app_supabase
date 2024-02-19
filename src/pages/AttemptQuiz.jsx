@@ -16,9 +16,113 @@ import GlobalContext from "../context/GlobalContext";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
 
-const AttemptQuiz = () => {
-  const { sub_quiz_id } = useParams();
 
+const AttemptQuiz = () => { 
+
+  const { sub_quiz_id } = useParams();
+  const [isAnswerSelected, setIsAnswerSelected] = useState(false);
+
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
+  
+  // fbsdjhfbjdsf
+  // const handleBookmarkClick = async (question_id) => {
+  //   const { data, error } = await supabase.auth.refreshSession();
+  //   if (error) {
+  //     console.log(error);
+  //     return;
+  //   }
+  
+  //   const { user } = data;
+  
+  //   // Check if the question is already bookmarked
+  //   const isBookmarked = await supabase
+  //     .from("question_bookmarks")
+  //     .select("*")
+  //     .eq("user_id", user.id)
+  //     .eq("question_id", question_id);
+  
+  //   if (isBookmarked.data.length > 0) {
+  //     console.log('Question is already bookmarked!');
+  //     return;
+  //   }
+  
+  //   // Bookmark the question
+  //   const { error: userBookMarkError } = await supabase
+  //     .from("question_bookmarks")
+  //     .insert([
+  //       {
+  //         user_id: user.id,
+  //         question_id,
+  //       },
+  //     ]);
+  
+  //   if (userBookMarkError) {
+  //     console.log(userBookMarkError);
+  //     return;
+  //   }
+  
+  //   console.log('Question bookmarked successfully!');
+  // };
+
+  const handleBookmarkClick = async (questionId) => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const { user } = data;
+
+    // Check if the question is already bookmarked
+    const isBookmarked = await supabase
+      .from("question_bookmarks")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("question_id", questionId);
+
+    if (isBookmarked.data.length > 0) {
+      // If bookmarked, remove it from bookmarks
+      const { error: removeBookmarkError } = await supabase
+        .from("question_bookmarks")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("question_id", questionId);
+
+      if (removeBookmarkError) {
+        console.log(removeBookmarkError);
+        return;
+      }
+
+      // Update state to remove the question from bookmarkedQuestions
+      setBookmarkedQuestions((prevBookmarks) =>
+        prevBookmarks.filter((id) => id !== questionId)
+      );
+    } else {
+      // If not bookmarked, add it to bookmarks
+      const { error: addBookmarkError } = await supabase
+        .from("question_bookmarks")
+        .insert([
+          {
+            user_id: user.id,
+            question_id: questionId,
+          },
+        ]);
+
+      if (addBookmarkError) {
+        console.log(addBookmarkError);
+        return;
+      }
+
+      // Update state to add the question to bookmarkedQuestions
+      setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
+    }
+  };
+  
+  
+  
+
+
+// hjdsfjhdsbfj
   const { setOpenQuizAnswerModal } = useContext(GlobalContext);
 
   const [isAnswer, setIsAnswer] = useState({
@@ -111,6 +215,7 @@ const AttemptQuiz = () => {
         return question;
       });
     });
+    
 
     const { data, error } = await supabase.auth.refreshSession();
     if (error) {
@@ -135,6 +240,7 @@ const AttemptQuiz = () => {
       console.log(userAnswerError);
       return;
     }
+
 
     // check if quiz progress exists then update else insert
 
@@ -196,7 +302,9 @@ const AttemptQuiz = () => {
   }, [sub_quiz_id]);
 
   return (
+    
     <>
+    
       <div className="pt-10 px-5 md:px-28">
         <div className="float-end mb-10">
           <div className="py-5 md:py-0">
@@ -229,10 +337,14 @@ const AttemptQuiz = () => {
                     <p className="text-sm text-gray-500">{question.question}</p>
                   </div>
                   <div className="flex justify-start items-start gap-2 my-2 md:my-0">
-                    <Tooltip content="Bookedmark">
-                      <Button color="light">
-                        <CiBookmark size={25} />
-                      </Button>
+                    <Tooltip content={bookmarkedQuestions.includes(question.id) ? 'Bookmarked' : 'Bookmark'}>
+                    <Button
+                    className={bookmarkedQuestions.includes(question.id) ? 'bg-indigo-600' : ''}
+                    color="light"
+                    onClick={() => handleBookmarkClick(question.id)}
+                  >
+                    <CiBookmark size={25} />
+                  </Button>
                     </Tooltip>
                     <Tooltip content="Answer">
                       <Button
@@ -257,38 +369,45 @@ const AttemptQuiz = () => {
                 </div>
                 <div>
                   {question.choices.map((choice, _index) => (
-                    <Button
-                      color={
-                        question.user_answer === choice.c_id &&
-                        question.user_answer_is_correct === true
-                          ? "success"
-                          : question.user_answer === choice.c_id &&
-                            question.user_answer_is_correct === false
-                          ? "failure"
-                          : "gray"
-                      }
-                      className={`w-full flex justify-start items-center my-2 ${
-                        question.user_answer === choice.c_id &&
-                        question.user_answer_is_correct === true
-                          ? "bg-green-400"
-                          : question.user_answer === choice.c_id &&
-                            question.user_answer_is_correct === false
-                          ? "bg-red-400"
-                          : ""
-                      }`}
-                      rounded
-                      key={_index}
-                      onClick={() =>
-                        addUserAnswer(
-                          question.id,
-                          choice.c_id,
-                          choice.is_correct,
-                          question.sub_quiz_id
-                        )
-                      }
-                    >
-                      {choice.option} {question.user_answer_is_correct}
-                    </Button>
+                 <Button
+                 color={
+                   question.user_answer === choice.c_id &&
+                   question.user_answer_is_correct
+                     ? "success"
+                     : question.user_answer === choice.c_id &&
+                       !question.user_answer_is_correct
+                     ? "failure"
+                     : "gray"
+                 }
+                 className={`w-full flex justify-start items-center my-2 ${
+                   question.user_answer === choice.c_id &&
+                   question.user_answer_is_correct
+                     ? "bg-green-400"
+                     : question.user_answer === choice.c_id &&
+                       !question.user_answer_is_correct
+                     ? "bg-red-400"
+                     : ""
+                 }`}
+                 rounded
+                 key={_index}
+                 onClick={() => {
+                   if (!isAnswerSelected) {
+                     addUserAnswer(
+                       question.id,
+                       choice.c_id,
+                       choice.is_correct,
+                       question.sub_quiz_id
+                     );
+                     setIsAnswerSelected(true);
+                   }
+                 }}
+                 disabled={
+                   isAnswerSelected ||
+                   (question.user_answer !== null && question.user_answer !== choice.c_id)
+                 }
+               >
+                 {choice.option} {question.user_answer_is_correct}
+               </Button>
                   ))}
                 </div>
               </Card>
