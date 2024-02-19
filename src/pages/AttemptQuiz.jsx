@@ -25,44 +25,33 @@ const AttemptQuiz = () => {
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
   
   // fbsdjhfbjdsf
-  // const handleBookmarkClick = async (question_id) => {
-  //   const { data, error } = await supabase.auth.refreshSession();
-  //   if (error) {
-  //     console.log(error);
-  //     return;
-  //   }
+  useEffect(() => {
   
-  //   const { user } = data;
-  
-  //   // Check if the question is already bookmarked
-  //   const isBookmarked = await supabase
-  //     .from("question_bookmarks")
-  //     .select("*")
-  //     .eq("user_id", user.id)
-  //     .eq("question_id", question_id);
-  
-  //   if (isBookmarked.data.length > 0) {
-  //     console.log('Question is already bookmarked!');
-  //     return;
-  //   }
-  
-  //   // Bookmark the question
-  //   const { error: userBookMarkError } = await supabase
-  //     .from("question_bookmarks")
-  //     .insert([
-  //       {
-  //         user_id: user.id,
-  //         question_id,
-  //       },
-  //     ]);
-  
-  //   if (userBookMarkError) {
-  //     console.log(userBookMarkError);
-  //     return;
-  //   }
-  
-  //   console.log('Question bookmarked successfully!');
-  // };
+    fetchBookmarkedQuestions();
+  }, []);
+  const fetchBookmarkedQuestions = async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const { user } = data;
+
+    // Fetch bookmarked questions for the current user from Supabase
+    const { data: bookmarkedData, error: bookmarkedError } = await supabase
+      .from("question_bookmarks")
+      .select("question_id")
+      .eq("user_id", user.id);
+
+    if (bookmarkedError) {
+      console.log(bookmarkedError);
+      return;
+    }
+
+    // Update state with bookmarked questions
+    setBookmarkedQuestions(bookmarkedData.map((entry) => entry.question_id));
+  };
 
   const handleBookmarkClick = async (questionId) => {
     const { data, error } = await supabase.auth.refreshSession();
@@ -74,13 +63,9 @@ const AttemptQuiz = () => {
     const { user } = data;
 
     // Check if the question is already bookmarked
-    const isBookmarked = await supabase
-      .from("question_bookmarks")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("question_id", questionId);
+    const isBookmarked = bookmarkedQuestions.includes(questionId);
 
-    if (isBookmarked.data.length > 0) {
+    if (isBookmarked) {
       // If bookmarked, remove it from bookmarks
       const { error: removeBookmarkError } = await supabase
         .from("question_bookmarks")
@@ -117,6 +102,63 @@ const AttemptQuiz = () => {
       setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
     }
   };
+
+
+  
+  // const handleBookmarkClick = async (questionId) => {
+  //   const { data, error } = await supabase.auth.refreshSession();
+  //   if (error) {
+  //     console.log(error);
+  //     return;
+  //   }
+
+  //   const { user } = data;
+
+  //   // Check if the question is already bookmarked
+  //   const isBookmarked = await supabase
+  //     .from("question_bookmarks")
+  //     .select("*")
+  //     .eq("user_id", user.id)
+  //     .eq("question_id", questionId);
+
+  //   if (isBookmarked.data.length > 0) {
+  //     // If bookmarked, remove it from bookmarks
+  //     const { error: removeBookmarkError } = await supabase
+  //       .from("question_bookmarks")
+  //       .delete()
+  //       .eq("user_id", user.id)
+  //       .eq("question_id", questionId);
+
+  //     if (removeBookmarkError) {
+  //       console.log(removeBookmarkError);
+  //       return;
+  //     }
+
+  //     // Update state to remove the question from bookmarkedQuestions
+  //     setBookmarkedQuestions((prevBookmarks) =>
+  //       prevBookmarks.filter((id) => id !== questionId)
+  //     );
+  //   } else {
+  //     // If not bookmarked, add it to bookmarks
+  //     const { error: addBookmarkError } = await supabase
+  //       .from("question_bookmarks")
+  //       .insert([
+  //         {
+  //           user_id: user.id,
+  //           question_id: questionId,
+  //         },
+  //       ]);
+
+  //     if (addBookmarkError) {
+  //       console.log(addBookmarkError);
+  //       return;
+  //     }
+
+  //     // Update state to add the question to bookmarkedQuestions
+  //     setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
+  //   }
+  // };
+
   
   
   
@@ -343,7 +385,7 @@ const AttemptQuiz = () => {
                     color="light"
                     onClick={() => handleBookmarkClick(question.id)}
                   >
-                    <CiBookmark size={25} />
+                    <CiBookmark size={25} className={bookmarkedQuestions.includes(question.id) ? 'text-white' : ''} />
                   </Button>
                     </Tooltip>
                     <Tooltip content="Answer">
