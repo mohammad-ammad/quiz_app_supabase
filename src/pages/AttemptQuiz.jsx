@@ -381,7 +381,7 @@ const AttemptQuiz = () => {
                   <div className="flex justify-start items-start gap-2 my-2 md:my-0">
                     <Tooltip content={bookmarkedQuestions.includes(question.id) ? 'Bookmarked' : 'Bookmark'}>
                     <Button
-                    className={bookmarkedQuestions.includes(question.id) ? 'bg-indigo-600' : ''}
+                    className={bookmarkedQuestions.includes(question.id) ? 'bg-indigo-600' : '' }
                     color="light"
                     onClick={() => handleBookmarkClick(question.id)}
                   >
@@ -415,19 +415,19 @@ const AttemptQuiz = () => {
                  color={
                    question.user_answer === choice.c_id &&
                    question.user_answer_is_correct
-                     ? "success"
+                     ? ""
                      : question.user_answer === choice.c_id &&
                        !question.user_answer_is_correct
-                     ? "failure"
-                     : "gray"
+                     ? ""
+                     : ""
                  }
-                 className={`w-full flex justify-start items-center my-2 ${
+                 className={`w-full flex justify-start items-center my-2  ${
                    question.user_answer === choice.c_id &&
                    question.user_answer_is_correct
-                     ? "bg-green-400"
+                     ? "bg-green-300 text-green-600"
                      : question.user_answer === choice.c_id &&
                        !question.user_answer_is_correct
-                     ? "bg-red-400"
+                     ? "bg-red-100 text-red-600"
                      : ""
                  }`}
                  rounded
@@ -440,7 +440,7 @@ const AttemptQuiz = () => {
                        choice.is_correct,
                        question.sub_quiz_id
                      );
-                     setIsAnswerSelected(true);
+                      setIsAnswerSelected(true);
                    }
                  }}
                  disabled={
