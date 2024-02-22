@@ -20,11 +20,12 @@ import { supabase } from "../utils/config";
 const AttemptQuiz = () => { 
 
   const { sub_quiz_id } = useParams();
+  
   const [isAnswerSelected, setIsAnswerSelected] = useState(false);
 
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
   
-  // fbsdjhfbjdsf
+
   useEffect(() => {
   
     fetchBookmarkedQuestions();
@@ -43,6 +44,7 @@ const AttemptQuiz = () => {
       .from("question_bookmarks")
       .select("question_id")
       .eq("user_id", user.id);
+      
 
     if (bookmarkedError) {
       console.log(bookmarkedError);
@@ -102,69 +104,9 @@ const AttemptQuiz = () => {
       setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
     }
   };
-
-
-  
-  // const handleBookmarkClick = async (questionId) => {
-  //   const { data, error } = await supabase.auth.refreshSession();
-  //   if (error) {
-  //     console.log(error);
-  //     return;
-  //   }
-
-  //   const { user } = data;
-
-  //   // Check if the question is already bookmarked
-  //   const isBookmarked = await supabase
-  //     .from("question_bookmarks")
-  //     .select("*")
-  //     .eq("user_id", user.id)
-  //     .eq("question_id", questionId);
-
-  //   if (isBookmarked.data.length > 0) {
-  //     // If bookmarked, remove it from bookmarks
-  //     const { error: removeBookmarkError } = await supabase
-  //       .from("question_bookmarks")
-  //       .delete()
-  //       .eq("user_id", user.id)
-  //       .eq("question_id", questionId);
-
-  //     if (removeBookmarkError) {
-  //       console.log(removeBookmarkError);
-  //       return;
-  //     }
-
-  //     // Update state to remove the question from bookmarkedQuestions
-  //     setBookmarkedQuestions((prevBookmarks) =>
-  //       prevBookmarks.filter((id) => id !== questionId)
-  //     );
-  //   } else {
-  //     // If not bookmarked, add it to bookmarks
-  //     const { error: addBookmarkError } = await supabase
-  //       .from("question_bookmarks")
-  //       .insert([
-  //         {
-  //           user_id: user.id,
-  //           question_id: questionId,
-  //         },
-  //       ]);
-
-  //     if (addBookmarkError) {
-  //       console.log(addBookmarkError);
-  //       return;
-  //     }
-
-  //     // Update state to add the question to bookmarkedQuestions
-  //     setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
-  //   }
-  // };
-
-  
-  
+ 
   
 
-
-// hjdsfjhdsbfj
   const { setOpenQuizAnswerModal } = useContext(GlobalContext);
 
   const [isAnswer, setIsAnswer] = useState({
@@ -410,47 +352,57 @@ const AttemptQuiz = () => {
                   </div>
                 </div>
                 <div>
-                  {question.choices.map((choice, _index) => (
-                 <Button
-                 color={
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? ""
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? ""
-                     : ""
-                 }
-                 className={`w-full flex justify-start items-center my-2  ${
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? "bg-green-300 text-green-600"
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? "bg-red-100 text-red-600"
-                     : ""
-                 }`}
-                 rounded
-                 key={_index}
-                 onClick={() => {
-                   if (!isAnswerSelected) {
-                     addUserAnswer(
-                       question.id,
-                       choice.c_id,
-                       choice.is_correct,
-                       question.sub_quiz_id
-                     );
-                      setIsAnswerSelected(true);
-                   }
-                 }}
-                 disabled={
-                   isAnswerSelected ||
-                   (question.user_answer !== null && question.user_answer !== choice.c_id)
-                 }
-               >
-                 {choice.option} {question.user_answer_is_correct}
-               </Button>
-                  ))}
+                {question.choices.map((choice, _index) => (
+  <Button
+    color={
+      question.user_answer === choice.c_id &&
+      question.user_answer_is_correct
+        ? ""
+        : question.user_answer === choice.c_id &&
+          !question.user_answer_is_correct
+        ? ""
+        : ""
+    }
+    className={`w-full flex justify-start items-center my-2  ${
+      question.user_answer === choice.c_id &&
+      question.user_answer_is_correct
+        ? "bg-green-300 text-green-600"
+        : question.user_answer === choice.c_id &&
+          !question.user_answer_is_correct
+        ? "bg-red-100 text-red-600"
+        : ""
+    }`}
+    rounded
+    key={_index}
+    onClick={() => {
+      if (!question.isAnswerSelected) {
+        addUserAnswer(
+          question.id,
+          choice.c_id,
+          choice.is_correct,
+          question.sub_quiz_id
+        );
+        setQuestions((prev) => {
+          return prev.map((q) => {
+            if (q.id === question.id) {
+              return {
+                ...q,
+                isAnswerSelected: true,
+              };
+            }
+            return q;
+          });
+        });
+      }
+    }}
+    disabled={
+      question.isAnswerSelected ||
+      (question.user_answer !== null && question.user_answer !== choice.c_id)
+    }
+  >
+    {choice.option} {question.user_answer_is_correct}
+  </Button>
+))}
                 </div>
               </Card>
             </div>
