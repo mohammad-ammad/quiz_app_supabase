@@ -315,7 +315,6 @@ useEffect(() => {
           <FaArrowRight/>
         </div>
         </div>
-
         </Link>
       </div>
     </div>
