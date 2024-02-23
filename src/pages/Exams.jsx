@@ -5,9 +5,11 @@ import ExamList from "../components/ExamList";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
 import LoginModal from "../components/LoginModal";
+import GlobalContext from '../context/GlobalContext'
+
 
 const Exams = () => {
-  
+  const {session} = useContext(GlobalContext)
   const { cat_id } = useParams();
 
   const [exams, setExams] = useState([]);

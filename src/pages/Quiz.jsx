@@ -276,18 +276,8 @@ const Quiz = () => {
             })
           ) : (
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-6 sm:gap-y-0">
-             <div className="text-center p-3 bg-red-600 text-white">No quiz found Sign in First Please 
+             <div className="text-center p-3">No quiz found 
              </div>
-
-            <button   onClick={() => setOpenModal(!openModal)} className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-              Signup
-            </button>
-            <button
-              onClick={() => setOpenModal(!openModal)}
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
-              login <span aria-hidden="true">→</span>
-            </button>
           </div>
           )}
         </div>
