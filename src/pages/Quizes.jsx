@@ -4,6 +4,7 @@ import { IoIosSearch } from 'react-icons/io'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../utils/config'
 import QuizList from '../components/QuizList'
+import LoginModal from "../components/LoginModal";
 
 const Quizes = () => {
     const {exam_id} = useParams()
@@ -71,6 +72,7 @@ const Quizes = () => {
           </ul>
         </div>
       </div>
+      <LoginModal/>
     </div>
   )
 }

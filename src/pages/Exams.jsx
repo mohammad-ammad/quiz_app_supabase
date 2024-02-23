@@ -1,11 +1,13 @@
 import { Spinner, TextInput } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
 import ExamList from "../components/ExamList";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
+import LoginModal from "../components/LoginModal";
 
 const Exams = () => {
+  
   const { cat_id } = useParams();
 
   const [exams, setExams] = useState([]);
@@ -71,6 +73,7 @@ const Exams = () => {
           </ul>
         </div>
       </div>
+      <LoginModal />
     </div>
   );
 };

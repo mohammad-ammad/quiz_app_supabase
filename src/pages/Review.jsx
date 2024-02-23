@@ -2,11 +2,10 @@ import { TextInput } from "flowbite-react";
 import {React,useState,useEffect} from "react";
 import { Link } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
-import ExamList from "../components/ExamList";
 import ReportPieChart from "../components/PieChart";
 import { supabase } from "../utils/config";
 import {RxCross2} from 'react-icons/rx'
-import { FaArrowLeft, FaArrowRight, FaCheckCircle, FaCheckSquare, FaCross, FaFoursquare, FaStar, FaStarHalfAlt } from "react-icons/fa";
+import {  FaArrowRight,  FaCheckSquare, FaStar } from "react-icons/fa";
 
 
 const Review = () => {
@@ -134,6 +133,7 @@ useEffect(() => {
       quiz_title: item.quiz_title,
     }));
     setSubQuizTitles(subQuizTitlesArray); 
+    // console.log("subquizTitleArrray", subQuizTitlesArray);
   };
   
 
@@ -221,19 +221,7 @@ useEffect(() => {
                 src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
               />
-              {/* <div className="min-w-0 flex-auto">
-                <p className="text-sm font-semibold leading-6 text-gray-900">
-                  <Link to="/">
-                    <span className="absolute inset-x-0 -top-px bottom-0"></span>
-                    Math exam
-                  </Link>
-                </p>
-                <p className="mt-1 flex text-xs leading-5 text-gray-500">
-                  <Link to="/" className="relative truncate hover:underline">
-                    {fetchQuestions}
-                  </Link>
-                </p>
-              </div> */}
+         
               {subQuizTitles.map((subQuizTitle,index)=> (
       <div key={index}>
         <Link
