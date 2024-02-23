@@ -1,9 +1,12 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
+import { supabase } from '../utils/config';
 
 const COLORS = ['#6875F5', '#FF8042'];
 
+
 const ReportPieChart = ({data}) => (
+  
   <PieChart width={400} height={400}>
     <Pie
       data={data}
