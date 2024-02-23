@@ -2,14 +2,19 @@ import { TextInput } from "flowbite-react";
 import {React,useState,useEffect} from "react";
 import { Link } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
-import ExamList from "../components/ExamList";
 import ReportPieChart from "../components/PieChart";
 import { supabase } from "../utils/config";
+import {RxCross2} from 'react-icons/rx'
+import {  FaArrowRight,  FaCheckSquare, FaStar } from "react-icons/fa";
 
 
 const Review = () => {
   const [userData, setUserData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [fetchQuestions, setfetchQuestions] = useState(null);
+  const [subQuizTitles, setSubQuizTitles] = useState([]);
+  const [truecounts, settruecounts] = useState([]);
+  const [falsecounts, setfalsecounts] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -62,6 +67,137 @@ const Review = () => {
       console.error('Error fetching attempted questions data:', error);
     }
   };
+
+
+
+
+
+
+
+// Call the fetchBookmarkedQuestions function
+useEffect(() => {
+  fetchBookmarkedQuestions();
+}, []);
+
+
+
+
+  const fetchBookmarkedQuestions = async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.error(error);
+      return;
+    }
+  
+    const { user } = data;
+  
+    // Fetch bookmarked questions for the current user from Supabase
+    const { data: bookmarkedData, error: bookmarkedError } = await supabase
+      .from("question_bookmarks")
+      .select("question_id")
+      .eq("user_id", user.id);
+  
+    if (bookmarkedError) {
+      console.error(bookmarkedError);
+      return;
+    }
+     const bookmarkcount = bookmarkedData.length;
+    setfetchQuestions(bookmarkcount);
+  
+    // Extract question_ids from the bookmarkedData
+    const questionIds = bookmarkedData.map((item) => item.question_id);
+   
+  
+    
+    const { data: titlesData, error: titlesError } = await supabase
+      .from("questions")
+      .select("sub_quiz_id")
+      .in("id", questionIds);
+  
+    if (titlesError) {
+      console.error(titlesError);
+      return;
+    }
+   const sub_quiz_ids = titlesData.map((item) => item.sub_quiz_id);
+    const {data: sub_quiz_title, error:sub_quiz_error} = await supabase
+    .from("sub_quizes")
+    .select("*")
+    .in("id", sub_quiz_ids)
+    if (sub_quiz_error) {
+      console.error(sub_quiz_error);
+      return;
+    }
+    
+    const subQuizTitlesArray = sub_quiz_title.map((item) => ({
+      id: item.id,
+      quiz_title: item.quiz_title,
+    }));
+    setSubQuizTitles(subQuizTitlesArray); 
+    // console.log("subquizTitleArrray", subQuizTitlesArray);
+  };
+  
+
+  const fetchTrueFalseCounts = async () => {
+    try {
+      // Refresh the user session
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing session:', error);
+        return;
+      }
+  
+      const { user } = data;
+  
+      // Fetch the attempted questions data
+      const { data: questionsData, error: questionsError } = await supabase
+        .from("attempted_questions")
+        .select("is_correct")
+        .eq("user_id", user.id);
+  
+      if (questionsError) {
+        console.error('Error fetching attempted questions:', questionsError);
+        return;
+      }
+  
+      // Group the data to calculate true and false counts
+      const groupedCounts = questionsData.reduce((counts, question) => {
+        counts[question.is_correct] = (counts[question.is_correct] || 0) + 1;
+        return counts;
+      }, {});
+  
+      // Display the counts
+      const truecount =  groupedCounts[true] || 0;
+      const falsecount =  groupedCounts[false] || 0;
+
+      settruecounts(truecount);
+      setfalsecounts(falsecount);
+      
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+  };
+  
+
+  
+  
+  // Call the function to fetch counts
+  useEffect(()=>{
+  fetchTrueFalseCounts();
+  
+  },[])
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className="pt-10 px-5 md:px-19">
       <div className="border border-gray-200 p-3 rounded-md">
@@ -85,19 +221,17 @@ const Review = () => {
                 src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
               />
-              <div className="min-w-0 flex-auto">
-                <p className="text-sm font-semibold leading-6 text-gray-900">
-                  <Link to="/">
-                    <span className="absolute inset-x-0 -top-px bottom-0"></span>
-                    Math exam
-                  </Link>
-                </p>
-                <p className="mt-1 flex text-xs leading-5 text-gray-500">
-                  <Link to="/" className="relative truncate hover:underline">
-                    Progress 50% , Score 34%, 32 Questions
-                  </Link>
-                </p>
-              </div>
+         
+              {subQuizTitles.map((subQuizTitle,index)=> (
+      <div key={index}>
+        <Link
+          to={`/attempt_quiz/${subQuizTitle.id}`}
+          className="relative truncate hover:underline"
+        >
+          {subQuizTitle.quiz_title}
+        </Link>
+      </div>
+    ))}
             </div>
             <div className="flex shrink-0 items-center gap-x-4">
               <svg
@@ -117,7 +251,7 @@ const Review = () => {
         </ul>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-center mt-5">
         <h1 className="text-[30px] font-bold">Reviews</h1>
         <div className="py-5 md:py-0">
           <TextInput
@@ -130,8 +264,58 @@ const Review = () => {
         </div>
       </div>
 
-      <div className="my-5">
-        {/* <ExamList /> */}
+      <div className="my-10 border">
+        <Link>
+        <div className="flex flex-row justify-between">
+        <div className="p-5 flex flex-row">
+          <FaStar className="text-yellow-300 text-2xl my-auto"/>
+          <div className="flex flex-col mx-4 ">
+            <h2>Bookmark</h2>
+            <p className="text-sm text-gray-400">{fetchQuestions} Items</p>
+          </div>
+      
+        </div>
+        <div className="my-auto mx-10 text-gray-400 text-md">
+          <FaArrowRight/>
+        </div>
+        </div>
+
+        </Link>
+      </div>
+      <div className="my-10 border">
+        <Link>
+        <div className="flex flex-row justify-between">
+        <div className="p-5 flex flex-row">
+          <FaCheckSquare className=" text-2xl my-auto text-green-400"/>
+          <div className="flex flex-col mx-4 ">
+            <h2>Correct</h2>
+            <p className="text-sm text-gray-400">{truecounts} Items</p>
+          </div>
+      
+        </div>
+        <div className="my-auto mx-10 text-gray-400 text-md">
+          <FaArrowRight/>
+        </div>
+        </div>
+
+        </Link>
+      </div>
+      <div className="my-10 border">
+        <Link to=''>
+        <div className="flex flex-row justify-between">
+        <div className="p-5 flex flex-row">
+          <RxCross2 className=" text-2xl my-auto text-red-500"/>
+          <div className="flex flex-col mx-4 ">
+            <h2>Incorrect</h2>
+            <p className="text-sm text-gray-400">{falsecounts} Items</p>
+          </div>
+      
+        </div>
+        <div className="my-auto mx-10 text-gray-400 text-md">
+          <FaArrowRight/>
+        </div>
+        </div>
+        </Link>
       </div>
     </div>
   );

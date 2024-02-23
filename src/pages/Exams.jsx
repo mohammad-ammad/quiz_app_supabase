@@ -1,11 +1,13 @@
 import { Spinner, TextInput } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
 import ExamList from "../components/ExamList";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
+import LoginModal from "../components/LoginModal";
 
 const Exams = () => {
+  
   const { cat_id } = useParams();
 
   const [exams, setExams] = useState([]);
@@ -34,9 +36,10 @@ const Exams = () => {
     fetchExams();
   }, [cat_id]);
   return (
-    <div className="pt-10 px-5 md:px-19">
-      <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-[30px] font-bold">Browes quiz from exams</h1>
+    <div className="pt-10">
+      <div className=" mx-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between">
+        <h1 className=" text-lg md:text-xl font-bold">Browes quiz from exams</h1>
         <div className="py-5 md:py-0">
           <TextInput
             id="search"
@@ -47,8 +50,10 @@ const Exams = () => {
         </div>
       </div>
 
+      </div>
+
       <div className="my-5">
-        <div className="container mx-auto">
+        <div className="">
           <ul
             role="list"
             className="divide-y divide-gray-100 overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl"
@@ -68,6 +73,7 @@ const Exams = () => {
           </ul>
         </div>
       </div>
+      <LoginModal />
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import { Spinner, TextInput } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
 import CategoryList from "../components/CategoryList";
 import { supabase } from "../utils/config";
+import GlobalContext from "../context/GlobalContext";
+import LoginModal from "../components/LoginModal";
 
 const Categories = () => {
+
   const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -65,6 +68,8 @@ const Categories = () => {
           </ul>
         </div>
       </div>
+      
+      <LoginModal />
     </div>
   );
 };
