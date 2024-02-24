@@ -1,34 +1,41 @@
 name: quiz app CI/CD deployment
 
 on:
-     push:
-          branches: [production]
-     workflow_dispatch:
+  push:
+    branches: [production]
+  workflow_dispatch:
 
 permissions:
-     contents: write
+  contents: write
 
 jobs:
-     build_and_deploy:
-          runs-on: ubuntu-latest
+  build_and_deploy:
+    runs-on: ubuntu-latest
 
-          steps:
-               - name: Checkout respository
-                 uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-               - name: nodeJs setup
-                 uses: actions/setup-node@v3
-                 with:
-                      node-version: 20
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-               - name: Install Dependency
-                 run: npm install --legacy-peer-deps
+      - name: Clear npm cache
+        run: npm cache clean --force
 
-               - name: Build Project
-                 run: npm run build
+      - name: Remove node_modules and package-lock.json
+        run: |
+          rm -rf node_modules package-lock.json
 
-               - name: Deploy to GitHub Pages
-                 uses: JamesIves/github-pages-deploy-action@4.1.0
-                 with:
-                      branch: gh-pages
-                      folder: dist
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          branch: gh-pages
+          folder: dist

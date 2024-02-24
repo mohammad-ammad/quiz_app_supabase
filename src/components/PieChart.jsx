@@ -3,8 +3,13 @@ import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 
 const COLORS = ['#6875F5', '#FF8042'];
 
+
 const ReportPieChart = ({data}) => (
-  <PieChart width={400} height={400}>
+  <div className="chart-container">
+
+
+  
+  <PieChart width={400} height={400} className='mx-auto'>
     <Pie
       data={data}
       cx={200}
@@ -22,6 +27,7 @@ const ReportPieChart = ({data}) => (
     <Tooltip />
     <Legend />
   </PieChart>
+  </div>
 );
 
 export default ReportPieChart;

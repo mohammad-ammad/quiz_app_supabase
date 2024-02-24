@@ -1,6 +1,22 @@
-import React from "react"
+import {React,useContext} from "react"
 import { Link } from "react-router-dom";
+import GlobalContext from '../context/GlobalContext'
 const QuizList = ({ data, key }) => {
+  const { session, setOpenModal } = useContext(GlobalContext);
+
+  const handleQuizClick = (event) => {
+    if (!session) {
+      // User is not logged in, open the login modal
+      setOpenModal(true);
+      // Prevent the default link
+      event.preventDefault();
+    } else {
+      // User is logged in, handle the click event (e.g., navigate to the quiz page)
+      // You can replace this with your actual logic
+      console.log("User is logged in. Handle the click event.");
+    }
+  };
+
   return (
     <li
       key={key}
@@ -14,13 +30,17 @@ const QuizList = ({ data, key }) => {
         />
         <div className="min-w-0 flex-auto">
           <p className="text-sm font-semibold leading-6 text-gray-900">
-            <Link to={`/quiz/${data.id}`}>
+            <Link to={`/quiz/${data.id}`} onClick={handleQuizClick}>
               <span className="absolute inset-x-0 -top-px bottom-0"></span>
               {data.quiz_name}
             </Link>
           </p>
           <p className="mt-1 flex text-xs leading-5 text-gray-500">
-            <Link to={`/quiz/${data.id}`} className="relative truncate hover:underline">
+            <Link
+              to={`/quiz/${data.id}`}
+              className="relative truncate hover:underline"
+              onClick={handleQuizClick}
+            >
               {data.total_items} Items
             </Link>
           </p>
@@ -43,5 +63,8 @@ const QuizList = ({ data, key }) => {
     </li>
   );
 };
+
+
+
 
 export default QuizList;
