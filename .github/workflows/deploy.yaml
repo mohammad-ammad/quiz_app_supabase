@@ -22,7 +22,7 @@ jobs:
                       node-version: 20
 
                - name: Install Dependency
-                 run: npm install
+                 run: npm install --legacy-peer-deps
 
                - name: Build Project
                  run: npm run build
