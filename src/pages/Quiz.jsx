@@ -6,6 +6,7 @@ import { supabase } from "../utils/config";
 import { useParams } from "react-router-dom";
 import GlobalContext from "../context/GlobalContext";
 import LoginModal from "../components/LoginModal";
+import toast from "react-hot-toast";
 
 const Quiz = () => {
   const { openModal, setOpenModal } =
@@ -15,7 +16,8 @@ const Quiz = () => {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [subquizesid, setsubquizesid] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [percentquestion, setpercentquestion] = useState(0);
+  // const [percentquestion, setpercentquestion] = useState(0);
+  const [upvoteLoading, setUpvoteLoading] = useState({});
 
   const fetchQuizes = async () => {
     setLoading(true);
@@ -63,12 +65,24 @@ const Quiz = () => {
         subQuizes.map((subQuiz) => subQuiz.id)
       );
 
+    // find total upvotes for each sub_quiz
+    const totalUpvotes = await supabase
+      .from("sub_quiz_upvotes")
+      .select("sub_quiz_id")
+      .in(
+        "sub_quiz_id",
+        subQuizes.map((subQuiz) => subQuiz.id)
+      );
+
     const quizes = subQuizes.map((subQuiz) => {
       const stats = quizStats.find((stat) => stat.sub_quiz_id === subQuiz.id);
       const _totalQuestions = totalQuestions.data.filter(
         (question) => question.sub_quiz_id === subQuiz.id
       ).length;
-      return { ...subQuiz, stats, _totalQuestions };
+      const _totalUpvotes = totalUpvotes.data.filter(
+        (upvote) => upvote.sub_quiz_id === subQuiz.id
+      ).length;
+      return { ...subQuiz, stats, _totalQuestions, _totalUpvotes };
     });
 
     setQuizes(quizes);
@@ -83,9 +97,9 @@ const Quiz = () => {
     fetchBookmarkCount();
   }, []);
 
-  useEffect(() => {
-    fetchTotalQuestionAttempt();
-  }, []);
+  // useEffect(() => {
+  //   fetchTotalQuestionAttempt();
+  // }, []);
  
 
   const fetchBookmarkCount = async () => {
@@ -134,117 +148,183 @@ const Quiz = () => {
   };
 
 
+  // const fetchTotalQuestionAttempt = async () => {
+  //   try {
+  //     const { data, error } = await supabase.auth.refreshSession();
+  //     if (error) {
+  //       console.error(error);
+  //       return;
+  //     }
+  
+  //     const { user } = data;
+  
+  //     // Fetch sub_quiz_id data based on user_id
+  //     const { data: subQuizIdData, error: subQuizError } = await supabase
+  //       .from("quiz_progress")
+  //       .select("sub_quiz_id")
+  //       .eq("user_id", user.id);
+  
+  //     if (subQuizError) {
+  //       console.error(subQuizError);
+  //       return;
+  //     }
 
-
-
-
-  const fetchTotalQuestionAttempt = async () => {
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error) {
-        console.error(error);
-        return;
-      }
+  //     console.log("subQuizIdData", subQuizIdData);
   
-      const { user } = data;
+  //     // Extract sub_quiz_id values
+  //     const subQuizIds = subQuizIdData.map((item) => item.sub_quiz_id);
   
-      // Fetch sub_quiz_id data based on user_id
-      const { data: subQuizIdData, error: subQuizError } = await supabase
-        .from("quiz_progress")
-        .select("sub_quiz_id")
-        .eq("user_id", user.id);
+  //     // Fetch sub_quiz data based on sub_quiz_id
+  //     const { data: subQuizData, error: subQuizDataError } = await supabase
+  //       .from("sub_quizes")
+  //       .select("id")
+  //       .in("id", subQuizIds);
   
-      if (subQuizError) {
-        console.error(subQuizError);
-        return;
-      }
+  //     const matchedCardId = subQuizData[0]?.id;
   
-      // Extract sub_quiz_id values
-      const subQuizIds = subQuizIdData.map((item) => item.sub_quiz_id);
+  //     if (subQuizDataError) {
+  //       console.error(subQuizDataError);
+  //       return;
+  //     }
   
-      // Fetch sub_quiz data based on sub_quiz_id
-      const { data: subQuizData, error: subQuizDataError } = await supabase
-        .from("sub_quizes")
-        .select("id")
-        .in("id", subQuizIds);
+  //     // Fetch total_question_attempt for the current user from Supabase
+  //     const { data: totalAttemptData, error: totalAttemptError } = await supabase
+  //       .from("quiz_progress")
+  //       .select("total_question_attempt")
+  //       .eq("user_id", user.id);
   
-      const matchedCardId = subQuizData[0]?.id;
+  //     if (totalAttemptError) {
+  //       console.error(totalAttemptError);
+  //       return;
+  //     }
   
-      if (subQuizDataError) {
-        console.error(subQuizDataError);
-        return;
-      }
+  //     // Extract total_question_attempt value
+  //     const totalQuestionAttempt =
+  //       totalAttemptData[0]?.total_question_attempt || 0;
   
-      // Fetch total_question_attempt for the current user from Supabase
-      const { data: totalAttemptData, error: totalAttemptError } = await supabase
-        .from("quiz_progress")
-        .select("total_question_attempt")
-        .eq("user_id", user.id);
+  //     // Fetch total_question_attempt for the current user from Supabase
+  //     const { data: totalquestionAttemptData, error: totalquestionAttemptError } =
+  //       await supabase.from("questions").select("question");
   
-      if (totalAttemptError) {
-        console.error(totalAttemptError);
-        return;
-      }
+  //     if (totalAttemptError) {
+  //       console.error(totalquestionAttemptError);
+  //       return;
+  //     }
   
-      // Extract total_question_attempt value
-      const totalQuestionAttempt =
-        totalAttemptData[0]?.total_question_attempt || 0;
-  
-      // Fetch total_question_attempt for the current user from Supabase
-      const { data: totalquestionAttemptData, error: totalquestionAttemptError } =
-        await supabase.from("questions").select("question");
-  
-      if (totalAttemptError) {
-        console.error(totalquestionAttemptError);
-        return;
-      }
-  
-      // Extract total_question_attempt value
-      const totalQuestionAttempts = totalquestionAttemptData.length || 0;
+  //     // Extract total_question_attempt value
+  //     const totalQuestionAttempts = totalquestionAttemptData.length || 0;
     
   
-      const percentquestionsattempt =
-        (totalQuestionAttempt / totalQuestionAttempts) * 100;
+  //     const percentquestionsattempt =
+  //       (totalQuestionAttempt / totalQuestionAttempts) * 100;
   
-      // Set progress for the matched card
-      setpercentquestion((prevPercentQuestion) => ({
-        ...prevPercentQuestion,
-        [matchedCardId]: percentquestionsattempt,
-      }));
+  //     // Set progress for the matched card
+  //     setpercentquestion((prevPercentQuestion) => ({
+  //       ...prevPercentQuestion,
+  //       [matchedCardId]: percentquestionsattempt,
+  //     }));
   
-      console.log("percent is ", percentquestionsattempt);
-    } catch (error) {
-      console.error("Unexpected error:", error);
-    }
-  };
-
-  //   const { data, error } = await supabase.auth.refreshSession();
-  //   if (error) {
-  //     console.error(error);
-  //     return;
+  //     console.log("percent is ", percentquestionsattempt);
+  //   } catch (error) {
+  //     console.error("Unexpected error:", error);
   //   }
-
-  //   const { user } = data;
-
-  //   // Fetch total_question_attempt for the current user from Supabase
-  //   const { data: totalAttemptData, error: totalAttemptError } = await supabase
-  //     .from("questions")
-  //     .select("question")
-
-  //   if (totalAttemptError) {
-  //     console.error(totalAttemptError);
-  //     return;
-  //   }
-
-  //   // Extract total_question_attempt value
-  //   const totalQuestionAttempt = totalAttemptData.length || 0;
-  //   console.log("Total Questions :", totalQuestionAttempt);
   // };
+
+
+  const quizUpVoteHandler = async (sub_quiz_id) => {
+    setUpvoteLoading(prevLoading => ({
+      ...prevLoading,
+      [sub_quiz_id]: true
+    }));
+
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.error(error);
+      setUpvoteLoading(prevLoading => ({
+        ...prevLoading,
+        [sub_quiz_id]: false
+      }));
+      return;
+    }
+
+    const { user } = data;
+
+    // check if record exists in sub_quiz_upvotes wrt to user_id and sub_quiz_id
+    const { data: subQuizUpvotes, error: subQuizUpvotesError } = await supabase
+      .from("sub_quiz_upvotes")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("sub_quiz_id", sub_quiz_id);
+
+    if (subQuizUpvotesError) {
+      console.error(subQuizUpvotesError);
+      setUpvoteLoading(prevLoading => ({
+        ...prevLoading,
+        [sub_quiz_id]: false
+      }));
+      return;
+    }
+
+    // if record exists, then delete it
+    if (subQuizUpvotes.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("sub_quiz_upvotes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("sub_quiz_id", sub_quiz_id);
+
+      if (deleteError) {
+        console.error(deleteError);
+        setUpvoteLoading(prevLoading => ({
+          ...prevLoading,
+          [sub_quiz_id]: false
+        }));
+        return;
+      }
+    } else {
+      // else insert a new record
+      const { error: insertError } = await supabase
+        .from("sub_quiz_upvotes")
+        .insert([{ user_id: user.id, sub_quiz_id }]);
+
+      if (insertError) {
+        console.error(insertError);
+        setUpvoteLoading(prevLoading => ({
+          ...prevLoading,
+          [sub_quiz_id]: false
+        }));
+        return;
+      }
+    }
+
+    toast.success(`Upvote ${subQuizUpvotes.length > 0 ? "removed" : "added"}`);
+
+    // update the state
+    setQuizes((prevQuizes) => {
+      return prevQuizes.map((prevQuiz) => {
+        if (prevQuiz.id === sub_quiz_id) {
+          return {
+            ...prevQuiz,
+            _totalUpvotes:
+              subQuizUpvotes.length > 0
+                ? prevQuiz._totalUpvotes - 1
+                : prevQuiz._totalUpvotes + 1,
+          };
+        }
+        return prevQuiz;
+      });
+    });
+
+    setUpvoteLoading(prevLoading => ({
+      ...prevLoading,
+      [sub_quiz_id]: false
+    }));
+  };
 
   return (
     <div className="pt-10 px-5 md:px-28">
       <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-[30px] font-bold">Quiz View</h1>
+        <h1 className="text-[30px] font-bold"></h1>
         <div className="py-5 md:py-0">
           <TextInput
             id="search"
@@ -270,7 +350,8 @@ const Quiz = () => {
                   data={quiz}
                   key={index}
                   bookmarkCount={isMatched ? bookmarkCount : 0}
-                  percentquestion={percentquestion}
+                  quizUpVoteHandler={quizUpVoteHandler}
+                  upvoteLoading={upvoteLoading[quiz.id] || false}
                 />
               );
             })

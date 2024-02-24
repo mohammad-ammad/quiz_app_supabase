@@ -15,19 +15,16 @@ import QuizModal from "../components/QuizModal";
 import GlobalContext from "../context/GlobalContext";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
+import toast from "react-hot-toast";
 
-
-const AttemptQuiz = () => { 
-
+const AttemptQuiz = () => {
   const { sub_quiz_id } = useParams();
-  
+
   const [isAnswerSelected, setIsAnswerSelected] = useState(false);
 
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
-  
 
   useEffect(() => {
-  
     fetchBookmarkedQuestions();
   }, []);
   const fetchBookmarkedQuestions = async () => {
@@ -44,7 +41,6 @@ const AttemptQuiz = () => {
       .from("question_bookmarks")
       .select("question_id")
       .eq("user_id", user.id);
-      
 
     if (bookmarkedError) {
       console.log(bookmarkedError);
@@ -80,6 +76,8 @@ const AttemptQuiz = () => {
         return;
       }
 
+      toast.success('Question Unbookmarked');
+
       // Update state to remove the question from bookmarkedQuestions
       setBookmarkedQuestions((prevBookmarks) =>
         prevBookmarks.filter((id) => id !== questionId)
@@ -100,12 +98,12 @@ const AttemptQuiz = () => {
         return;
       }
 
+      toast.success('Question Bookmarked');
+
       // Update state to add the question to bookmarkedQuestions
       setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
     }
   };
- 
-  
 
   const { setOpenQuizAnswerModal } = useContext(GlobalContext);
 
@@ -166,7 +164,17 @@ const AttemptQuiz = () => {
         return;
       }
 
-      console.log(userAnswers);
+      // find HY votes
+      const { data: hy_data, error: hy_error } = await supabase
+        .from("hy_questions")
+        .select("*")
+        .eq("question_id", question.id);
+
+      if (hy_error) {
+        console.error(hy_error);
+        setLoading(false);
+        return;
+      }
 
       const userAnswer =
         userAnswers.length > 0 ? userAnswers[0].user_answer : null;
@@ -177,6 +185,7 @@ const AttemptQuiz = () => {
         ...question,
         user_answer: userAnswer,
         user_answer_is_correct: userAnswerIsCorrect,
+        totalHYVotes: hy_data.length > 0 ? hy_data.length : 0,
       };
 
       questionsWithUserAnswers.push(questionWithUserAnswer);
@@ -186,7 +195,14 @@ const AttemptQuiz = () => {
     setLoading(false);
   };
 
-  const addUserAnswer = async (question_id, choice_id, correct_ans, sub_quiz_id) => {
+  const addUserAnswer = async (
+    question_id,
+    choice_id,
+    correct_ans,
+    sub_quiz_id,
+    totalQuestionCount
+  ) => {
+    console.log("question", totalQuestionCount);
     setQuestions((prev) => {
       return prev.map((question) => {
         if (question.id === question_id) {
@@ -199,7 +215,6 @@ const AttemptQuiz = () => {
         return question;
       });
     });
-    
 
     const { data, error } = await supabase.auth.refreshSession();
     if (error) {
@@ -225,7 +240,6 @@ const AttemptQuiz = () => {
       return;
     }
 
-
     // check if quiz progress exists then update else insert
 
     const { data: quizProgress, error: quizProgressError } = await supabase
@@ -249,8 +263,15 @@ const AttemptQuiz = () => {
           total_correct: correct_ans
             ? quizProgress[0].total_correct + 1
             : quizProgress[0].total_correct,
-          total_incorrect: !correct_ans ? quizProgress[0].total_incorrect + 1 : quizProgress[0].total_incorrect,
-          quiz_progress: quizProgress[0].quiz_progress + 10,
+          total_incorrect: !correct_ans
+            ? quizProgress[0].total_incorrect + 1
+            : quizProgress[0].total_incorrect,
+          quiz_progress:
+            totalQuestionCount > 0
+              ? ((quizProgress[0].total_question_attempt + 1) /
+                  totalQuestionCount) *
+                100
+              : 0,
         })
         .eq("user_id", user.id)
         .eq("sub_quiz_id", sub_quiz_id);
@@ -259,7 +280,7 @@ const AttemptQuiz = () => {
         console.log(updateQuizProgressError);
         return;
       }
-    } else {  
+    } else {
       const { error: insertQuizProgressError } = await supabase
         .from("quiz_progress")
         .insert([
@@ -269,26 +290,87 @@ const AttemptQuiz = () => {
             total_question_attempt: 1,
             total_correct: correct_ans ? 1 : 0,
             total_incorrect: !correct_ans ? 1 : 0,
-            quiz_progress: 10,
+            quiz_progress:
+              totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0,
           },
         ]);
 
+      console.log(
+        "progress inserted",
+        totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0
+      );
       if (insertQuizProgressError) {
         console.log(insertQuizProgressError);
         return;
       }
     }
-
   };
+
+  const handleHYQuestion = async (qid) => {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const { user } = data;
+
+    const { data: hy_data, error: hy_error } = await supabase
+      .from("hy_questions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("question_id", qid);
+
+    if (hy_error) {
+      console.error(hy_error);
+      return;
+    }
+
+    if (hy_data.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("hy_questions")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("question_id", qid);
+
+      if (deleteError) {
+        console.error(deleteError);
+        return;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from("hy_questions")
+        .insert([{ user_id: user.id, question_id: qid }]);
+
+      if (insertError) {
+        console.error(insertError);
+        return;
+      }
+    }
+
+    toast.success(`${hy_data.length > 0 ? "Removed" : "Added"} as HY Question`)
+    setQuestions((prev) => {
+      return prev.map((question) => {
+        if (question.id === qid) {
+          return {
+            ...question,
+            totalHYVotes: hy_data.length > 0 ? 
+              question.totalHYVotes - 1 : question.totalHYVotes + 1,
+          };
+        }
+        return question;
+      });
+    });
+  };
+  
 
   useEffect(() => {
     fetchQuestions();
   }, [sub_quiz_id]);
 
   return (
-    
     <>
-    
       <div className="pt-10 px-5 md:px-28">
         <div className="float-end mb-10">
           <div className="py-5 md:py-0">
@@ -316,19 +398,36 @@ const AttemptQuiz = () => {
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                   <div>
                     <h1 className="text-xl font-semibold my-2">
-                      Question {index + 1}
+                      Question {index + 1} / {questions.length}
                     </h1>
                     <p className="text-sm text-gray-500">{question.question}</p>
                   </div>
                   <div className="flex justify-start items-start gap-2 my-2 md:my-0">
-                    <Tooltip content={bookmarkedQuestions.includes(question.id) ? 'Bookmarked' : 'Bookmark'}>
-                    <Button
-                    className={bookmarkedQuestions.includes(question.id) ? 'bg-indigo-600' : '' }
-                    color="light"
-                    onClick={() => handleBookmarkClick(question.id)}
-                  >
-                    <CiBookmark size={25} className={bookmarkedQuestions.includes(question.id) ? 'text-white' : ''} />
-                  </Button>
+                    <Tooltip
+                      content={
+                        bookmarkedQuestions.includes(question.id)
+                          ? "Bookmarked"
+                          : "Bookmark"
+                      }
+                    >
+                      <Button
+                        className={
+                          bookmarkedQuestions.includes(question.id)
+                            ? "bg-indigo-600"
+                            : ""
+                        }
+                        color="light"
+                        onClick={() => handleBookmarkClick(question.id)}
+                      >
+                        <CiBookmark
+                          size={25}
+                          className={
+                            bookmarkedQuestions.includes(question.id)
+                              ? "text-white"
+                              : ""
+                          }
+                        />
+                      </Button>
                     </Tooltip>
                     <Tooltip content="Answer">
                       <Button
@@ -344,65 +443,79 @@ const AttemptQuiz = () => {
                         <GrHide size={25} />
                       </Button>
                     </Tooltip>
-                    <Tooltip content="333 votes as HY Question">
-                      <Button color="light">
-                        <AiOutlineThunderbolt size={25} />
+                    <Tooltip content={`${question?.totalHYVotes} votes as HY Question`}>
+                      <Button
+                        color="light"
+                        className={
+                          question.totalHYVotes > 0
+                            ? "bg-indigo-600"
+                            : ""
+                        }
+                        onClick={() => handleHYQuestion(question?.id)}
+                      >
+                        <AiOutlineThunderbolt size={25} className={
+                          question.totalHYVotes > 0
+                            ? "text-white"
+                            : ""
+                        } />
                       </Button>
                     </Tooltip>
                   </div>
                 </div>
                 <div>
-                {question.choices.map((choice, _index) => (
-  <Button
-    color={
-      question.user_answer === choice.c_id &&
-      question.user_answer_is_correct
-        ? ""
-        : question.user_answer === choice.c_id &&
-          !question.user_answer_is_correct
-        ? ""
-        : ""
-    }
-    className={`w-full flex justify-start items-center my-2  ${
-      question.user_answer === choice.c_id &&
-      question.user_answer_is_correct
-        ? "bg-green-300 text-green-600"
-        : question.user_answer === choice.c_id &&
-          !question.user_answer_is_correct
-        ? "bg-red-100 text-red-600"
-        : ""
-    }`}
-    rounded
-    key={_index}
-    onClick={() => {
-      if (!question.isAnswerSelected) {
-        addUserAnswer(
-          question.id,
-          choice.c_id,
-          choice.is_correct,
-          question.sub_quiz_id
-        );
-        setQuestions((prev) => {
-          return prev.map((q) => {
-            if (q.id === question.id) {
-              return {
-                ...q,
-                isAnswerSelected: true,
-              };
-            }
-            return q;
-          });
-        });
-      }
-    }}
-    disabled={
-      question.isAnswerSelected ||
-      (question.user_answer !== null && question.user_answer !== choice.c_id)
-    }
-  >
-    {choice.option} {question.user_answer_is_correct}
-  </Button>
-))}
+                  {question.choices.map((choice, _index) => (
+                    <Button
+                      color={
+                        question.user_answer === choice.c_id &&
+                        question.user_answer_is_correct
+                          ? ""
+                          : question.user_answer === choice.c_id &&
+                            !question.user_answer_is_correct
+                          ? ""
+                          : "gray"
+                      }
+                      className={`w-full flex justify-start items-center my-2  ${
+                        question.user_answer === choice.c_id &&
+                        question.user_answer_is_correct
+                          ? "bg-green-300 text-green-600"
+                          : question.user_answer === choice.c_id &&
+                            !question.user_answer_is_correct
+                          ? "bg-red-100 text-red-600"
+                          : ""
+                      }`}
+                      rounded
+                      key={_index}
+                      onClick={() => {
+                        if (!question.isAnswerSelected) {
+                          addUserAnswer(
+                            question.id,
+                            choice.c_id,
+                            choice.is_correct,
+                            question.sub_quiz_id,
+                            questions.length
+                          );
+                          setQuestions((prev) => {
+                            return prev.map((q) => {
+                              if (q.id === question.id) {
+                                return {
+                                  ...q,
+                                  isAnswerSelected: true,
+                                };
+                              }
+                              return q;
+                            });
+                          });
+                        }
+                      }}
+                      disabled={
+                        question.isAnswerSelected ||
+                        (question.user_answer !== null &&
+                          question.user_answer !== choice.c_id)
+                      }
+                    >
+                      {choice.option} {question.user_answer_is_correct}
+                    </Button>
+                  ))}
                 </div>
               </Card>
             </div>

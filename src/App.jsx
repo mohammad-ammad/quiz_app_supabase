@@ -9,7 +9,7 @@ import Categories from './pages/Categories';
 import Review from './pages/Review';
 import Exams from './pages/Exams';
 import Quizes from './pages/Quizes';
-
+import { Toaster } from 'react-hot-toast';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +31,7 @@ const App = () => {
   return (
     <div className='md:px-20 px-5 pb-10'>
       <RouterProvider router={router} />
+      <Toaster />
     </div>
   )
 }
