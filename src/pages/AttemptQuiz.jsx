@@ -1,7 +1,6 @@
 import {
   Button,
   Card,
-  Pagination,
   Spinner,
   TextInput,
   Tooltip,
