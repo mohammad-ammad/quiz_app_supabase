@@ -1,21 +1,63 @@
-import {React,useContext} from "react"
+import {React,useContext,useEffect,useState} from "react"
 import { Link } from "react-router-dom";
 import GlobalContext from '../context/GlobalContext'
+import { supabase } from "../utils/config";
 const QuizList = ({ data, key }) => {
+
+  const [subquizitem, setsubquizcount] = useState([])
   const { session, setOpenModal } = useContext(GlobalContext);
 
   const handleQuizClick = (event) => {
     if (!session) {
-      // User is not logged in, open the login modal
+ 
       setOpenModal(true);
-      // Prevent the default link
+     
       event.preventDefault();
     } else {
-      // User is logged in, handle the click event (e.g., navigate to the quiz page)
-      // You can replace this with your actual logic
+     
+  
       console.log("User is logged in. Handle the click event.");
     }
   };
+
+  const fetchquizcount = async () => {
+  const {data : sub_quiz_item , error:catError} = await supabase
+    .from('sub_quizes')
+    .select('quizes_id')
+    .eq('quizes_id', data.id);
+
+    if(catError){
+      console.log(error)    
+  }
+
+   const sub_quizes_count = sub_quiz_item.map((item) => item.quizes_id).length  
+     setsubquizcount(sub_quizes_count);
+
+ 
+  }
+
+  useEffect(()=> {
+    fetchquizcount();
+  },[])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <li
@@ -41,7 +83,7 @@ const QuizList = ({ data, key }) => {
               className="relative truncate hover:underline"
               onClick={handleQuizClick}
             >
-              {data.total_items} Items
+              {subquizitem} Items
             </Link>
           </p>
         </div>

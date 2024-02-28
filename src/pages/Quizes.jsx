@@ -12,6 +12,37 @@ const Quizes = () => {
     const [quizes, setQuizes] = useState([])
 
     const [loading, setLoading] = useState(false)
+    // const [subquizitem, setsubquizcount] = useState([])
+
+    // const fetchquizcount = async () => {
+    //   const {data : quizes, error} = await supabase
+    //   .from('quizes')
+    //   .select('*')
+    //   if(error){
+    //     console.log(error)
+    //     return
+    // }
+    // const quizes_count = quizes.map((item) => item.id)
+    // // console.log(quizes_count);
+
+    // const {data : sub_quiz_item , error:catError} = await supabase
+    //   .from('sub_quizes')
+    //   .select('quizes_id')
+    //   .eq('quizes_id', quizes_count);
+  
+    //   if(catError){
+    //     console.log(error)    
+    // }
+    // const sub_quizes_count = sub_quiz_item.map((item) => item.quizes_id).length
+    // console.log(sub_quizes_count);
+     
+    //   setsubquizcount(sub_quizes_count);
+
+   
+    // }
+    // useEffect(()=> {
+    //   fetchquizcount();
+    // },[])
 
     const fetchQuizes = async () => {
       setLoading(true)

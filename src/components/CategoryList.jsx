@@ -1,28 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { examList } from "../utils/examList";
 import { Link } from "react-router-dom";
 import { supabase } from "../utils/config";
 const CategoryList = ({data, key}) => {
-  console.log("jkdbfbkjsd", data.id)
-  // const fetchcategorycount  = async () => {
+  const [category_count, setCategorycount] = useState([]);
+  // console.log("jkdbfbkjsd", data)
+  const fetchcategorycount  = async () => {
     
-  //     const {data : quiz, error} = await supabase
-  //     .from('exams')
-  //     .select('*')
-  //     .eq('category_id', data.id)
-  //     console.log("sjdfjhdbfhds",quiz)
-    
+      const {data : category_id_count, error} = await supabase
+      .from('exams')
+      .select('category_id')
+      .eq('category_id', data.id)
+      // console.log("sjdfjhdbfhds",category_id_count)
 
-  //     if(error){
-  //         console.log(error)
-  //         setLoading(false)
-  //         return
-  //     }
     
-  // };
-  // useEffect(()=> {
-  //   fetchcategorycount();
-  // },[])
+    const category_count = category_id_count.map((item) => item.category_id).length
+    //  console.log("tottal number",category_count)
+     setCategorycount(category_count);
+
+      if(error){
+          console.log(error)
+          setLoading(false)
+          return
+      }
+    
+  };
+  useEffect(()=> {
+    fetchcategorycount();
+  },[])
   return (
     <>
   
@@ -45,7 +50,7 @@ const CategoryList = ({data, key}) => {
           </p>
           <p className="mt-1 flex text-xs leading-5 text-gray-500">
             <Link to={`/exams/${data.id}`} className="relative truncate hover:underline">
-              {data.exam_count} exams
+              {category_count} exams
             </Link>
           </p>
         </div>

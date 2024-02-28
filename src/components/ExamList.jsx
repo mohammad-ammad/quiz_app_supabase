@@ -1,6 +1,52 @@
-import React from "react"
+import {React,useState,useEffect} from "react"
 import { Link } from "react-router-dom";
+import { supabase } from "../utils/config";
 const ExamList = ({ data, key }) => {
+  const [quiz_round_count, setquizroundcount] = useState([]);
+
+  const fetchquizround  = async () => {
+    
+    const {data : quiz_round, error} = await supabase
+    .from('quizes')
+    .select('exam_id')
+    .eq('exam_id', data.id)
+    //  console.log("sjdfjhdbfhds",quiz_round)
+
+  
+   const quiz_round_count = quiz_round.map((item) => item.exam_id).length
+    // console.log("tottal number",quiz_round_count)
+    setquizroundcount(quiz_round_count);
+
+    if(error){
+        console.log(error)
+        setLoading(false)
+        return
+    }
+  
+};
+useEffect(()=> {
+  fetchquizround();
+},[])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <li
       key={key}
@@ -21,7 +67,8 @@ const ExamList = ({ data, key }) => {
           </p>
           <p className="mt-1 flex text-xs leading-5 text-gray-500">
             <Link to={`/quizes/${data.id}`} className="relative truncate hover:underline">
-              {data.total_quizes} Quizes, {data.total_questions} Questions
+              {quiz_round_count} Quize Round 
+              {/* {data.total_questions} Questions */}
             </Link>
           </p>
         </div>
