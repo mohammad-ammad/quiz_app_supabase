@@ -129,17 +129,47 @@ const Review = () => {
       setLoading(false);
       return;
     }
-
+    const sub_quiz_title_data = sub_quiz_title.map((item) => item.quizes_id);
+    
     const {data: totalQuestionsData, error: totalQuestionsError} = await supabase
       .from("questions")
       .select("*")
       .in("sub_quiz_id", sub_quiz_ids)
 
 
+
+const { data: quizes, error: quizes_error } = await supabase
+    .from("quizes")
+    .select("exam_id")
+    .in("id", sub_quiz_title_data);
+    if (sub_quiz_error) {
+      console.error(quizes_error);
+      setLoading(false);
+      return;
+    }
+    const quezes_exam_id = quizes.map((item) => item.exam_id);
+ 
+    
+    const { data: exam_title, error: exam_error } = await supabase
+    .from("exams")
+    .select("*")
+    .in("id", quezes_exam_id);
+    if (sub_quiz_error) {
+      console.error(exam_error);
+      setLoading(false);
+      return;
+    }
+    // const exam_name = exam_title.map((item) => item.exam_name);
+    // console.log("exam_name", exam_name);
+    // console.log("sub_quiz data ",exam_name);
+    // setExamName(exam_name);
+  
+
     
     const subQuizTitlesArray = sub_quiz_title.map((item) => ({
       id: item.id,
       quiz_title: item.quiz_title,
+      exam_title:exam_title.map((name) => name.exam_name),
       totalQuestions: totalQuestionsData.filter((question) => question.sub_quiz_id === item.id).length,
       totalBookmarked: questionIds.filter((questionId) => totalQuestionsData.filter((question) => question.sub_quiz_id === item.id).map((question) => question.id).includes(questionId)).length
     }));
@@ -213,7 +243,7 @@ const Review = () => {
         </div>
       </div>
 
-      <h1 className="text-2xl font-semibold my-2">Bookedmarks</h1>
+      <h1 className="text-2xl font-semibold my-2">Bookedmark</h1>
 
       <div className="container mx-auto py-2">
         <ul
@@ -232,7 +262,7 @@ const Review = () => {
               />
               <div className="flex flex-col">
                 <h2 className="text-lg font-semibold text-gray-900 truncate">
-                  {subQuizTitle.quiz_title}
+                  {subQuizTitle.exam_title}
                 </h2>
                 <div className="flex gap-2">
                 <p className="text-sm text-gray-500">
@@ -277,7 +307,7 @@ const Review = () => {
           />
         </div>
       </div>
-
+{/* 
       <div className="my-10 border">
         <Link>
           <div className="flex flex-row justify-between">
@@ -293,7 +323,7 @@ const Review = () => {
             </div>
           </div>
         </Link>
-      </div>
+      </div> */}
       <div className="my-10 border">
         <Link>
           <div className="flex flex-row justify-between">

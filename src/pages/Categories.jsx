@@ -26,6 +26,7 @@ const Categories = () => {
       setCategories(category);
       setLoading(false);
     }
+    
   }
 
   useEffect(() => {

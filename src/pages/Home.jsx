@@ -64,6 +64,7 @@ const Home = () => {
       </div>
 
       <div className="container mx-auto">
+      <h2 className=" text-center sm:text-left mb-6 font-bold text-xl sm:text-2xl">Categories</h2>
         <ul
           role="list"
           className="divide-y divide-gray-100 overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl"
@@ -76,6 +77,7 @@ const Home = () => {
               />
             </div>
           ) : categories.length > 0 ? (
+            
             categories?.map((category, index) => (
               <CategoryList data={category} key={index} />
             ))

@@ -1,8 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { examList } from "../utils/examList";
 import { Link } from "react-router-dom";
+import { supabase } from "../utils/config";
 const CategoryList = ({data, key}) => {
+  console.log("jkdbfbkjsd", data.id)
+  // const fetchcategorycount  = async () => {
+    
+  //     const {data : quiz, error} = await supabase
+  //     .from('exams')
+  //     .select('*')
+  //     .eq('category_id', data.id)
+  //     console.log("sjdfjhdbfhds",quiz)
+    
+
+  //     if(error){
+  //         console.log(error)
+  //         setLoading(false)
+  //         return
+  //     }
+    
+  // };
+  // useEffect(()=> {
+  //   fetchcategorycount();
+  // },[])
   return (
+    <>
+  
     <li
       key={key}
       className="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6"
@@ -42,6 +65,7 @@ const CategoryList = ({data, key}) => {
         </svg>
       </div>
     </li>
+    </>
   );
 };
 

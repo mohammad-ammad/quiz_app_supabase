@@ -39,7 +39,7 @@ const Quizes = () => {
   return (
     <div className="pt-10 px-5 md:px-19">
       <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-[30px] font-bold">Quizes</h1>
+        <h1 className="text-[30px] font-bold">Files</h1>
         <div className="py-5 md:py-0">
           <TextInput
             id="search"
