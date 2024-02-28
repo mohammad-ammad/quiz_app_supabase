@@ -211,35 +211,12 @@ const Quiz = () => {
         ...prevPercentQuestion,
         [matchedCardId]: percentquestionsattempt,
       }));
-  
-      console.log("percent is ", percentquestionsattempt);
     } catch (error) {
       console.error("Unexpected error:", error);
     }
   };
 
-  //   const { data, error } = await supabase.auth.refreshSession();
-  //   if (error) {
-  //     console.error(error);
-  //     return;
-  //   }
 
-  //   const { user } = data;
-
-  //   // Fetch total_question_attempt for the current user from Supabase
-  //   const { data: totalAttemptData, error: totalAttemptError } = await supabase
-  //     .from("questions")
-  //     .select("question")
-
-  //   if (totalAttemptError) {
-  //     console.error(totalAttemptError);
-  //     return;
-  //   }
-
-  //   // Extract total_question_attempt value
-  //   const totalQuestionAttempt = totalAttemptData.length || 0;
-  //   console.log("Total Questions :", totalQuestionAttempt);
-  // };
 
   return (
     <div className="pt-10 px-5 md:px-28">
