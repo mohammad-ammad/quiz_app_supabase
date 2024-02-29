@@ -8,41 +8,12 @@ import LoginModal from "../components/LoginModal";
 
 const Quizes = () => {
     const {exam_id} = useParams()
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [quizes, setQuizes] = useState([])
 
     const [loading, setLoading] = useState(false)
-    // const [subquizitem, setsubquizcount] = useState([])
 
-    // const fetchquizcount = async () => {
-    //   const {data : quizes, error} = await supabase
-    //   .from('quizes')
-    //   .select('*')
-    //   if(error){
-    //     console.log(error)
-    //     return
-    // }
-    // const quizes_count = quizes.map((item) => item.id)
-    // // console.log(quizes_count);
-
-    // const {data : sub_quiz_item , error:catError} = await supabase
-    //   .from('sub_quizes')
-    //   .select('quizes_id')
-    //   .eq('quizes_id', quizes_count);
-  
-    //   if(catError){
-    //     console.log(error)    
-    // }
-    // const sub_quizes_count = sub_quiz_item.map((item) => item.quizes_id).length
-    // console.log(sub_quizes_count);
-     
-    //   setsubquizcount(sub_quizes_count);
-
-   
-    // }
-    // useEffect(()=> {
-    //   fetchquizcount();
-    // },[])
 
     const fetchQuizes = async () => {
       setLoading(true)
@@ -67,6 +38,17 @@ const Quizes = () => {
         fetchQuizes()
     }
     , [exam_id])
+
+    const filteredquizes = quizes.filter((quiz) =>
+    quiz.quiz_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+    const handleSearch = (event) => {
+      console.log(event)
+      setSearchQuery(event.target.value);
+    };
+
+
   return (
     <div className="pt-10 px-5 md:px-19">
       <div className="flex flex-col md:flex-row justify-between items-center">
@@ -77,6 +59,8 @@ const Quizes = () => {
             type="text"
             rightIcon={IoIosSearch}
             placeholder="search"
+            value={searchQuery}
+            onChange={handleSearch}
           />
         </div>
       </div>
@@ -95,7 +79,7 @@ const Quizes = () => {
                   aria-label="Center-aligned spinner example"
                 />
               </div>
-              ) : quizes.length > 0 ? quizes.map((quiz, index) => (
+              ) : filteredquizes.length > 0 ? filteredquizes.map((quiz, index) => (
                 <QuizList data={quiz} key={index}/>
             )) : <div className="text-center py-5">No quiz found</div>
             }

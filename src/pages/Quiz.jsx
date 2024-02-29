@@ -9,6 +9,7 @@ import LoginModal from "../components/LoginModal";
 import toast from "react-hot-toast";
 
 const Quiz = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const { openModal, setOpenModal } =
     useContext(GlobalContext);
   const { quiz_id } = useParams();
@@ -16,6 +17,8 @@ const Quiz = () => {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [subquizesid, setsubquizesid] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [falsecount, setfalsecount] = useState('');
+  const [truecount, settruecount] = useState('');
   // const [percentquestion, setpercentquestion] = useState(0);
   const [upvoteLoading, setUpvoteLoading] = useState({});
 
@@ -321,6 +324,56 @@ const Quiz = () => {
     }));
   };
 
+
+  const filteredquizes = quizes.filter((quiz) =>
+  quiz.quiz_title.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+  const handleSearch = (event) => {
+    console.log(event)
+    setSearchQuery(event.target.value);
+  };
+
+  const correctfalse = async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const { user } = data;
+
+    const { data: questions} = await supabase
+    .from("questions")
+    .select("id")
+    
+    const question = questions.map((item)=> item.id)
+    
+    
+    const { data: correctFalseCount, error: correctFalseError } = await supabase
+    .from("attempted_questions")
+    .select("is_correct")
+    .in("question_id",question);
+    console.log(correctFalseCount)
+    
+// const getcount = correctFalseCount.filter((item)=> item.is_correct === true).length
+// const getcountfalse = correctFalseCount.filter((item)=> item.is_correct === false).length
+setfalsecount(getcountfalse);
+settruecount(getcount);
+console.log(getcountfalse);
+
+  if (correctFalseError) {
+    console.log(correctFalseError);
+    setLoading(false);
+    return;
+  }
+
+    
+  }
+  useEffect(() => {
+correctfalse();
+  },[])
+
   return (
     <div className="pt-10 px-5 md:px-28">
       <div className="flex flex-col md:flex-row justify-between items-center">
@@ -331,6 +384,8 @@ const Quiz = () => {
             type="text"
             rightIcon={IoIosSearch}
             placeholder="search"
+            // value={searchQuery}
+             onChange={handleSearch}
             required
           />
         </div>
@@ -341,12 +396,14 @@ const Quiz = () => {
         </div>
       ) : (
         <div className="my-5">
-          {quizes.length > 0 ? (
-            quizes.map((quiz, index) => {
+          {filteredquizes.length > 0 ? (
+            filteredquizes.map((quiz, index) => {
               const isMatched =
                 Array.isArray(subquizesid) && subquizesid.includes(quiz.id);
               return (
                 <QuizProgressCard
+                falsecount = {falsecount}
+                truecount = {truecount}
                   data={quiz}
                   key={index}
                   bookmarkCount={isMatched ? bookmarkCount : 0}

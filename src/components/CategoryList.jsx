@@ -50,7 +50,7 @@ const CategoryList = ({data, key}) => {
           </p>
           <p className="mt-1 flex text-xs leading-5 text-gray-500">
             <Link to={`/exams/${data.id}`} className="relative truncate hover:underline">
-              {category_count} exams
+              {category_count || 0 } exams
             </Link>
           </p>
         </div>

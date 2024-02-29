@@ -9,6 +9,7 @@ import GlobalContext from '../context/GlobalContext'
 
 
 const Exams = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const {session} = useContext(GlobalContext)
   const { cat_id } = useParams();
 
@@ -37,6 +38,15 @@ const Exams = () => {
   useEffect(() => {
     fetchExams();
   }, [cat_id]);
+
+  const filteredexam = exams.filter((exam) =>
+  exam.exam_name.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+  const handleSearch = (event) => {
+    console.log(event)
+    setSearchQuery(event.target.value);
+  };
   return (
     <div className="pt-10">
       <div className=" mx-auto">
@@ -48,6 +58,8 @@ const Exams = () => {
             type="text"
             rightIcon={IoIosSearch}
             placeholder="search"
+            value={searchQuery}
+            onChange={handleSearch}
           />
         </div>
       </div>
@@ -67,8 +79,8 @@ const Exams = () => {
                   aria-label="Center-aligned spinner example"
                 />
               </div>
-            ) : exams.length > 0 ? (
-              exams.map((exam, index) => <ExamList data={exam} key={index} />)
+            ) : filteredexam.length > 0 ? (
+              filteredexam.map((exam, index) => <ExamList data={exam} key={index} />)
             ) : (
               <div className="text-center py-5">No exams found</div>
             )}

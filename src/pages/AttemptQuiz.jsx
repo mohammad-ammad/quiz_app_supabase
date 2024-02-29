@@ -18,6 +18,13 @@ import { supabase } from "../utils/config";
 import toast from "react-hot-toast";
 
 const AttemptQuiz = () => {
+  const itemsPerPage = 1; // Display one question at a time
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const onPageChange = (page) => setCurrentPage(page);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+ 
   const { sub_quiz_id } = useParams();
 
   const [isAnswerSelected, setIsAnswerSelected] = useState(false);
@@ -224,24 +231,79 @@ const AttemptQuiz = () => {
 
     const { user } = data;
 
-    const { error: userAnswerError } = await supabase
-      .from("attempted_questions")
-      .insert([
-        {
-          user_id: user.id,
-          question_id,
-          user_answer: choice_id,
-          is_correct: correct_ans,
-        },
-      ]);
+      // Check if the question is already attempted
+  const { data: existingAnswer, error: existingAnswerError } = await supabase
+  .from("attempted_questions")
+  .select("id, is_correct")
+  .eq("user_id", user.id)
+  .eq("question_id", question_id);
 
-    if (userAnswerError) {
-      console.log(userAnswerError);
-      return;
-    }
+  console.log("existing answer", existingAnswer);
+
+if (existingAnswerError) {
+  console.log(existingAnswerError);
+  return;
+}
+if (existingAnswer.length > 0) {
+  console.log("Updating existing answer...");
+  // If the question is already attempted, update the existing answer
+  const { error: updateAnswerError } = await supabase
+    .from("attempted_questions")
+    .update({
+      user_answer: choice_id,
+      is_correct: correct_ans,
+    })
+    .eq("id", existingAnswer[0].id);
+
+  if (updateAnswerError) {
+    console.log(updateAnswerError);
+    return;
+  }
+  console.log("Existing answer updated successfully!");
+} else {
+
+  console.log("Inserting a new answer...");
+  const { error: insertAnswerError } = await supabase
+    .from("attempted_questions")
+    .insert([
+      {
+        user_id: user.id,
+        question_id,
+        user_answer: choice_id,
+        is_correct: correct_ans,
+      },
+    ]);
+
+  if (insertAnswerError) {
+    console.log(insertAnswerError);
+    console.log("New answer inserted successfully!");
+    return;
+    
+  }
+}
+
+    // const { error: userAnswerError } = await supabase
+    //   .from("attempted_questions")
+    //   .insert([
+    //     {
+    //       user_id: user.id,
+    //       question_id,
+    //       user_answer: choice_id,
+    //       is_correct: correct_ans,
+    //     },
+    //   ]);
+
+    // if (userAnswerError) {
+    //   console.log(userAnswerError);
+    //   return;
+    // }
 
     // check if quiz progress exists then update else insert
 
+
+
+
+// ammad bhai code
     const { data: quizProgress, error: quizProgressError } = await supabase
       .from("quiz_progress")
       .select("*")
@@ -306,6 +368,10 @@ const AttemptQuiz = () => {
     }
   };
 
+
+
+
+  // handly hy question code 
   const handleHYQuestion = async (qid) => {
     const { data, error } = await supabase.auth.refreshSession();
 
@@ -369,6 +435,8 @@ const AttemptQuiz = () => {
     fetchQuestions();
   }, [sub_quiz_id]);
 
+
+
   return (
     <>
       <div className="pt-10 px-5 md:px-28">
@@ -392,137 +460,85 @@ const AttemptQuiz = () => {
             />
           </div>
         ) : questions.length > 0 ? (
-          questions.map((question, index) => (
-            <div className="my-5">
-              <Card className="min-w-full">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+          <div className="my-5">
+            <Card className="min-w-full">
+              {questions.slice(startIndex, endIndex).map((question, index) => (
+                <div key={index}>
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <div>
+                      <h1 className="text-xl font-semibold my-2">
+                        Question {startIndex + index + 1} / {questions.length}
+                      </h1>
+                      <p className="text-sm text-gray-500">{question.question}</p>
+                    </div>
+                    {/* Your existing buttons (bookmark, answer, HYQuestion) */}
+                  </div>
                   <div>
-                    <h1 className="text-xl font-semibold my-2">
-                      Question {index + 1} / {questions.length}
-                    </h1>
-                    <p className="text-sm text-gray-500">{question.question}</p>
-                  </div>
-                  <div className="flex justify-start items-start gap-2 my-2 md:my-0">
-                    <Tooltip
-                      content={
-                        bookmarkedQuestions.includes(question.id)
-                          ? "Bookmarked"
-                          : "Bookmark"
-                      }
-                    >
+                    {question.choices.map((choice, _index) => (
                       <Button
-                        className={
-                          bookmarkedQuestions.includes(question.id)
-                            ? "bg-indigo-600"
-                            : ""
+                        color={
+                          question.user_answer === choice.c_id &&
+                          question.user_answer_is_correct
+                            ? ""
+                            : question.user_answer === choice.c_id &&
+                              !question.user_answer_is_correct
+                            ? ""
+                            : "gray"
                         }
-                        color="light"
-                        onClick={() => handleBookmarkClick(question.id)}
-                      >
-                        <CiBookmark
-                          size={25}
-                          className={
-                            bookmarkedQuestions.includes(question.id)
-                              ? "text-white"
-                              : ""
-                          }
-                        />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content="Answer">
-                      <Button
-                        color="light"
-                        onClick={() =>
-                          handleAnswer(
-                            `Question ${index + 1}`,
-                            question.question,
-                            question.choices
-                          )
-                        }
-                      >
-                        <GrHide size={25} />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content={`${question?.totalHYVotes} votes as HY Question`}>
-                      <Button
-                        color="light"
-                        className={
-                          question.totalHYVotes > 0
-                            ? "bg-indigo-600"
+                        className={`w-full flex justify-start items-center my-2  ${
+                          question.user_answer === choice.c_id &&
+                          question.user_answer_is_correct
+                            ? "bg-green-300 text-green-600"
+                            : question.user_answer === choice.c_id &&
+                              !question.user_answer_is_correct
+                            ? "bg-red-100 text-red-600"
                             : ""
-                        }
-                        onClick={() => handleHYQuestion(question?.id)}
-                      >
-                        <AiOutlineThunderbolt size={25} className={
-                          question.totalHYVotes > 0
-                            ? "text-white"
-                            : ""
-                        } />
-                      </Button>
-                    </Tooltip>
-                  </div>
-                </div>
-                <div>
-                  {question.choices.map((choice, _index) => (
-                    <Button
-                      color={
-                        question.user_answer === choice.c_id &&
-                        question.user_answer_is_correct
-                          ? ""
-                          : question.user_answer === choice.c_id &&
-                            !question.user_answer_is_correct
-                          ? ""
-                          : "gray"
-                      }
-                      className={`w-full flex justify-start items-center my-2  ${
-                        question.user_answer === choice.c_id &&
-                        question.user_answer_is_correct
-                          ? "bg-green-300 text-green-600"
-                          : question.user_answer === choice.c_id &&
-                            !question.user_answer_is_correct
-                          ? "bg-red-100 text-red-600"
-                          : ""
-                      }`}
-                      rounded
-                      key={_index}
-                      onClick={() => {
-                        if (!question.isAnswerSelected) {
-                          addUserAnswer(
-                            question.id,
-                            choice.c_id,
-                            choice.is_correct,
-                            question.sub_quiz_id,
-                            questions.length
-                          );
-                          setQuestions((prev) => {
-                            return prev.map((q) => {
-                              if (q.id === question.id) {
-                                return {
-                                  ...q,
-                                  isAnswerSelected: true,
-                                };
-                              }
-                              return q;
+                        }`}
+                        rounded
+                        key={_index}
+                        onClick={() => {
+                          if (!question.isAnswerSelected) {
+                            addUserAnswer(
+                              question.id,
+                              choice.c_id,
+                              choice.is_correct,
+                              question.sub_quiz_id,
+                              questions.length
+                            );
+                            setQuestions((prev) => {
+                              return prev.map((q) => {
+                                if (q.id === question.id) {
+                                  return {
+                                    ...q,
+                                    isAnswerSelected: true,
+                                  };
+                                }
+                                return q;
+                              });
                             });
-                          });
-                        }
-                      }}
-                      disabled={
-                        question.isAnswerSelected ||
-                        (question.user_answer !== null &&
-                          question.user_answer !== choice.c_id)
-                      }
-                    >
-                      {choice.option} {question.user_answer_is_correct}
-                    </Button>
-                  ))}
+                          }
+                        }}
+                      >
+                        {choice.option} {question.user_answer_is_correct}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </Card>
-            </div>
-          ))
+              ))}
+            </Card>
+          </div>
         ) : (
           <div className="text-center py-10">No questions found</div>
         )}
+             <div className="flex justify-center mt-4">
+        <Pagination
+          layout="table"
+          currentPage={currentPage}
+          totalPages={Math.ceil(questions.length / itemsPerPage)}
+          onPageChange={onPageChange}
+        />
+      </div>
+    
       </div>
       <QuizModal data={isAnswer} />
     </>

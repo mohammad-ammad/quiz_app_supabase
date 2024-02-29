@@ -5,7 +5,7 @@ import { CiStar } from "react-icons/ci";
 import { TbArrowElbowRight } from "react-icons/tb";
 import { Link } from 'react-router-dom';
 
-function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLoading}) {
+function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLoading,falsecount,truecount}) {
   return (
     <Link to={`/attempt-quiz/${data?.id}`} className='block' key={key}>
     <Card className="min-w-full my-5">
@@ -40,13 +40,13 @@ function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLo
 
       <div className='flex flex-col space-y-4 justify-center text-center'>
       <span class=" rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-          <h2 className='font-bold'>{data?.stats?.total_correct || 0} Q</h2>
+          <h2 className='font-bold'>{truecount || 0} Q</h2>
           <h3 className='font-bold text-md'>Correct Question</h3>
       </span>
         </div>
         <div className='flex flex-col space-y-4 justify-center text-center'>
         <span class=" rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
-          <h2 className='font-bold'>{data?.stats?.total_incorrect || 0} Q</h2>
+          <h2 className='font-bold'>{falsecount || 0} Q</h2>
           <h3 className='font-bold text-md'>Incorrect Question</h3>
           
           </span>
