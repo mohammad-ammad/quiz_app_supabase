@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "flowbite-react";
 import React, { useContext, useEffect, useState } from "react";
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch, IoMdChatboxes } from "react-icons/io";
 import { CiBookmark } from "react-icons/ci";
 import { GrHide } from "react-icons/gr";
 import { AiOutlineThunderbolt } from "react-icons/ai";
@@ -17,6 +17,8 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
 import { RxCross2 } from "react-icons/rx";
 import { FaArrowRight, FaCheckSquare, FaStar } from "react-icons/fa";
+import { MdIndeterminateCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
+import { IoChatboxOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 
 const AttemptQuiz = () => {
@@ -526,7 +528,7 @@ if (existingAnswer.length > 0) {
                         }
                         onClick={() => handleHYQuestion(question?.id)}
                       >
-                        <AiOutlineThunderbolt size={25} className={
+                        <IoChatboxOutline size={25} className={
                           question.totalHYVotes > 0
                             ? "text-white"
                             : ""
@@ -539,61 +541,75 @@ if (existingAnswer.length > 0) {
                   </div>
                   <div>
                     {question.choices.map((choice, _index) => (
-                 <Button
-                 color={
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? ""
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? ""
-                     : "gray"
-                 }
-                 className={`w-full flex justify-between items-center my-2  ${
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? "bg-gray-200"
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? "bg-gray-200"
-                     : ""
-                 }`}
-                 rounded
-                 key={_index}
-                 onClick={() => {
-                   if (!question.isAnswerSelected) {
-                     addUserAnswer(
-                       question.id,
-                       choice.c_id,
-                       choice.is_correct,
-                       question.sub_quiz_id,
-                       questions.length
-                     );
-                     setQuestions((prev) => {
-                       return prev.map((q) => {
-                         if (q.id === question.id) {
-                           return {
-                             ...q,
-                             isAnswerSelected: true,
-                           };
-                         }
-                         return q;
-                       });
-                     });
-                   }
-                 }}
-               >
-                 {choice.option}{" "}
-                 {question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct && (
-                     <FaCheckSquare className="text-2xl my-auto text-green-400" />
-                   )}
-                 {question.user_answer === choice.c_id &&
-                   !question.user_answer_is_correct && (
-                     <RxCross2 className="text-2xl my-auto text-red-500" />
-                   )}
-               </Button>
-               
+                      <button
+                      style={{
+                        backgroundColor:
+                          question.user_answer === choice.c_id &&
+                          question.user_answer_is_correct
+                            ? ""
+                            : question.user_answer === choice.c_id &&
+                              !question.user_answer_is_correct
+                            ? ""
+                            : "",
+                      }}
+                      className={`w-full flex justify-start items-center my-2 py-3 px-3 ${
+                        question.user_answer === choice.c_id &&
+                        question.user_answer_is_correct
+                          ? "bg-gray-200"
+                          : question.user_answer === choice.c_id &&
+                            !question.user_answer_is_correct
+                          ? "bg-gray-200"
+                          : "bg-gray-200"
+                      } rounded`}
+                      key={_index}
+                      onClick={() => {
+                        if (!question.isAnswerSelected) {
+                          addUserAnswer(
+                            question.id,
+                            choice.c_id,
+                            choice.is_correct,
+                            question.sub_quiz_id,
+                            questions.length
+                          );
+                          setQuestions((prev) => {
+                            return prev.map((q) => {
+                              if (q.id === question.id) {
+                                return {
+                                  ...q,
+                                  isAnswerSelected: true,
+                                };
+                              }
+                              return q;
+                            });
+                          });
+                        }
+                      }}
+                    >
+                      <div className="flex justify-between items-center w-full">
+                        <div>{choice.option}</div>
+                        <div>
+                          {question.user_answer === choice.c_id &&
+                            question.user_answer_is_correct && (
+                              <div className="bg-white py-1 px-3 rounded-md">
+                                <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+                              </div>
+                          )}
+                          {question.user_answer === choice.c_id &&
+                            !question.user_answer_is_correct && (
+                              <div className="bg-white py-1 px-3 rounded-md">
+                                <RxCross2 className="text-xl my-auto text-red-500"  />
+                              </div>
+                          )}
+                          {
+                            question.user_answer !== choice.c_id && 
+                            <div className="bg-white py-1 px-3 rounded-md">
+                              <MdIndeterminateCheckBox  className="text-xl my-auto text-gray-300" />
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </button>
+                    
                     ))}
                   </div>
                 </div>

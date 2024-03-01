@@ -26,7 +26,7 @@ function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLo
       </Button>
 
       </div>
-      <p className='text-md text-gray-500'>Progress {data?.stats?.quiz_progress || 0}%</p>
+      <p className='text-md text-gray-500'>Progress {Math.floor(data?.stats?.quiz_progress || 0)}%</p>
       <Progress progress={data?.stats?.quiz_progress || 0} color='indigo' />
       <div className='grid grid-cols-1 md:grid-cols-4 gap-2'>
       {/* <Button color="" className='bg-gray-100 border-gray-100'><MdOutlineVideoLibrary className='text-gray-900' /> <span className='ml-2 text-gray-900'>{data?._totalQuestions} Questions</span></Button>
