@@ -15,6 +15,8 @@ import QuizModal from "../components/QuizModal";
 import GlobalContext from "../context/GlobalContext";
 import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
+import { RxCross2 } from "react-icons/rx";
+import { FaArrowRight, FaCheckSquare, FaStar } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 const AttemptQuiz = () => {
@@ -234,11 +236,12 @@ const AttemptQuiz = () => {
       // Check if the question is already attempted
   const { data: existingAnswer, error: existingAnswerError } = await supabase
   .from("attempted_questions")
-  .select("id, is_correct")
+  .select("id,is_correct,question_id,user_id")
   .eq("user_id", user.id)
   .eq("question_id", question_id);
 
-  console.log("existing answer", existingAnswer);
+ const existingAnswers = existingAnswer.map((item)=> item.id)
+  console.log("existing answerhjvjhj", existingAnswers);
 
 if (existingAnswerError) {
   console.log(existingAnswerError);
@@ -253,7 +256,7 @@ if (existingAnswer.length > 0) {
       user_answer: choice_id,
       is_correct: correct_ans,
     })
-    .eq("id", existingAnswer[0].id);
+    .in("id", existingAnswers);
 
   if (updateAnswerError) {
     console.log(updateAnswerError);
@@ -330,7 +333,7 @@ if (existingAnswer.length > 0) {
             : quizProgress[0].total_incorrect,
           quiz_progress:
             totalQuestionCount > 0
-              ? ((quizProgress[0].total_question_attempt + 1) /
+              ? Math.round (((quizProgress[0].total_question_attempt + 1)) /
                   totalQuestionCount) *
                 100
               : 0,
@@ -472,65 +475,130 @@ if (existingAnswer.length > 0) {
                       <p className="text-sm text-gray-500">{question.question}</p>
                     </div>
                     {/* Your existing buttons (bookmark, answer, HYQuestion) */}
+                    <div className="flex justify-start items-start gap-2 my-2 md:my-0">
+                    <Tooltip
+                      content={
+                        bookmarkedQuestions.includes(question.id)
+                          ? "Bookmarked"
+                          : "Bookmark"
+                      }
+                    >
+                      <Button
+                        className={
+                          bookmarkedQuestions.includes(question.id)
+                            ? "bg-indigo-600"
+                            : ""
+                        }
+                        color="light"
+                        onClick={() => handleBookmarkClick(question.id)}
+                      >
+                        <CiBookmark
+                          size={25}
+                          className={
+                            bookmarkedQuestions.includes(question.id)
+                              ? "text-white"
+                              : ""
+                          }
+                        />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Answer">
+                      <Button
+                        color="light"
+                        onClick={() =>
+                          handleAnswer(
+                            `Question ${index + 1}`,
+                            question.question,
+                            question.choices
+                          )
+                        }
+                      >
+                        <GrHide size={25} />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content={`${question?.totalHYVotes} votes as HY Question`}>
+                      <Button
+                        color="light"
+                        className={
+                          question.totalHYVotes > 0
+                            ? "bg-indigo-600"
+                            : ""
+                        }
+                        onClick={() => handleHYQuestion(question?.id)}
+                      >
+                        <AiOutlineThunderbolt size={25} className={
+                          question.totalHYVotes > 0
+                            ? "text-white"
+                            : ""
+                        } />
+                      </Button>
+                    </Tooltip>
+                  </div>
+                
+                    {/* jkdbjhsdfbksdf */}
                   </div>
                   <div>
                     {question.choices.map((choice, _index) => (
-                      <Button
-                        color={
-                          question.user_answer === choice.c_id &&
-                          question.user_answer_is_correct
-                            ? ""
-                            : question.user_answer === choice.c_id &&
-                              !question.user_answer_is_correct
-                            ? ""
-                            : "gray"
-                        }
-                        className={`w-full flex justify-start items-center my-2  ${
-                          question.user_answer === choice.c_id &&
-                          question.user_answer_is_correct
-                            ? "bg-green-300 text-green-600"
-                            : question.user_answer === choice.c_id &&
-                              !question.user_answer_is_correct
-                            ? "bg-red-100 text-red-600"
-                            : ""
-                        }`}
-                        rounded
-                        key={_index}
-                        onClick={() => {
-                          if (!question.isAnswerSelected) {
-                            addUserAnswer(
-                              question.id,
-                              choice.c_id,
-                              choice.is_correct,
-                              question.sub_quiz_id,
-                              questions.length
-                            );
-                            setQuestions((prev) => {
-                              return prev.map((q) => {
-                                if (q.id === question.id) {
-                                  return {
-                                    ...q,
-                                    isAnswerSelected: true,
-                                  };
-                                }
-                                return q;
-                              });
-                            });
-                          }
-                        }}
-                      >
-                        {choice.option} {question.user_answer_is_correct}
-                      </Button>
+                 <Button
+                 color={
+                   question.user_answer === choice.c_id &&
+                   question.user_answer_is_correct
+                     ? ""
+                     : question.user_answer === choice.c_id &&
+                       !question.user_answer_is_correct
+                     ? ""
+                     : "gray"
+                 }
+                 className={`w-full flex justify-between items-center my-2  ${
+                   question.user_answer === choice.c_id &&
+                   question.user_answer_is_correct
+                     ? "bg-gray-200"
+                     : question.user_answer === choice.c_id &&
+                       !question.user_answer_is_correct
+                     ? "bg-gray-200"
+                     : ""
+                 }`}
+                 rounded
+                 key={_index}
+                 onClick={() => {
+                   if (!question.isAnswerSelected) {
+                     addUserAnswer(
+                       question.id,
+                       choice.c_id,
+                       choice.is_correct,
+                       question.sub_quiz_id,
+                       questions.length
+                     );
+                     setQuestions((prev) => {
+                       return prev.map((q) => {
+                         if (q.id === question.id) {
+                           return {
+                             ...q,
+                             isAnswerSelected: true,
+                           };
+                         }
+                         return q;
+                       });
+                     });
+                   }
+                 }}
+               >
+                 {choice.option}{" "}
+                 {question.user_answer === choice.c_id &&
+                   question.user_answer_is_correct && (
+                     <FaCheckSquare className="text-2xl my-auto text-green-400" />
+                   )}
+                 {question.user_answer === choice.c_id &&
+                   !question.user_answer_is_correct && (
+                     <RxCross2 className="text-2xl my-auto text-red-500" />
+                   )}
+               </Button>
+               
                     ))}
                   </div>
                 </div>
               ))}
-            </Card>
-          </div>
-        ) : (
-          <div className="text-center py-10">No questions found</div>
-        )}
-             <div className="flex justify-center mt-4">
+                        <div className="flex justify-center mt-4">
         <Pagination
           layout="table"
           currentPage={currentPage}
@@ -538,6 +606,13 @@ if (existingAnswer.length > 0) {
           onPageChange={onPageChange}
         />
       </div>
+            </Card>
+          </div>
+
+        ) : (
+          <div className="text-center py-10">No questions found</div>
+        )}
+   
     
       </div>
       <QuizModal data={isAnswer} />

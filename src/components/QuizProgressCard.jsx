@@ -5,7 +5,11 @@ import { CiStar } from "react-icons/ci";
 import { TbArrowElbowRight } from "react-icons/tb";
 import { Link } from 'react-router-dom';
 
-function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLoading,falsecount,truecount}) {
+function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLoading, falsecount, truecount , progress}) {
+  
+
+
+  
   return (
     <Link to={`/attempt-quiz/${data?.id}`} className='block' key={key}>
     <Card className="min-w-full my-5">

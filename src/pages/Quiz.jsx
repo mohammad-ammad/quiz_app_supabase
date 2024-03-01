@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Spinner, TextInput } from "flowbite-react";
+import { Card, Spinner, TextInput } from "flowbite-react";
 import { IoIosSearch } from "react-icons/io";
 import QuizProgressCard from "../components/QuizProgressCard";
 import { supabase } from "../utils/config";
@@ -19,6 +19,8 @@ const Quiz = () => {
   const [loading, setLoading] = useState(false);
   const [falsecount, setfalsecount] = useState('');
   const [truecount, settruecount] = useState('');
+  const [subquizes, setsubquiz] = useState([]);
+  const [progress, setprogress] = useState([]);
   // const [percentquestion, setpercentquestion] = useState(0);
   const [upvoteLoading, setUpvoteLoading] = useState({});
 
@@ -100,9 +102,7 @@ const Quiz = () => {
     fetchBookmarkCount();
   }, []);
 
-  // useEffect(() => {
-  //   fetchTotalQuestionAttempt();
-  // }, []);
+
  
 
   const fetchBookmarkCount = async () => {
@@ -151,7 +151,151 @@ const Quiz = () => {
   };
 
 
-  // const fetchTotalQuestionAttempt = async () => {
+   const fetchTotalQuestionAttempt = async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const { user } = data;
+
+    const { data: attemptedQuestions, error: attemptedQuestionsError } = await supabase
+  .from("attempted_questions")
+  .select("*")
+  .eq("user_id", user.id)
+
+  const uniqueQuestionIds = attemptedQuestions.map((item)=>item.question_id);
+  const getcounttrue = attemptedQuestions.filter((item)=> item.is_correct === true)
+
+ const getcountfalse = attemptedQuestions.filter((item)=> item.is_correct === false)
+  console.log("attempt", uniqueQuestionIds)
+
+if (attemptedQuestionsError) {
+  console.error(attemptedQuestionsError);
+  return;
+}
+
+// dfdsf
+const { data: quizProgress, error: quizProgressError } = await supabase
+  .from("quiz_progress")
+  .select("*")
+  .eq("user_id", user.id)
+  
+
+if (quizProgressError) {
+  console.error(quizProgressError);
+  return;
+}
+
+
+if (quizProgress.length > 0) {
+  // Update existing row
+  const { error: updateQuizProgressError } = await supabase
+    .from("quiz_progress")
+    .update({
+      total_question_attempt: uniqueQuestionIds.length,
+      total_correct: getcounttrue.length,
+      total_incorrect: getcountfalse.length,
+    })
+    .eq("user_id", user.id)
+    
+
+  if (updateQuizProgressError) {
+    console.error(updateQuizProgressError);
+    return;
+  }
+}
+else {
+  // Insert a new row
+  const { error: insertQuizProgressError } = await supabase
+    .from("quiz_progress")
+    .insert([
+      {
+        user_id: user.id,
+        sub_quiz_id,
+        total_question_attempt: uniqueQuestionIds.length,
+        total_correct: getcounttrue.length,
+        total_incorrect: getcounttrue.length,
+        
+      },
+    ]);
+
+    if (insertQuizProgressError) {
+      console.error(insertQuizProgressError);
+      return;
+    }
+  }
+
+
+  const { data: quizProgressvalue, error: quizProgressvalueError } = await supabase
+  .from("quiz_progress")
+  .select("total_correct,total_incorrect,sub_quiz_id,total_question_attempt")
+  .eq("user_id", user.id)
+  const sub_quiz_ids = quizProgressvalue.map((item)=> item.sub_quiz_id);
+  console.log(sub_quiz_ids)
+// Log the total_correct and total_incorrect values
+const totalCorrect = quizProgressvalue.length > 0 ? quizProgressvalue[0].total_correct : 0;
+const totalIncorrect = quizProgressvalue.length > 0 ? quizProgressvalue[0].total_incorrect : 0;
+const totalquestionAttempt = quizProgressvalue.length > 0 ? quizProgressvalue[0].total_question_attempt : 0;
+
+
+console.log("Total Correct:", totalCorrect);
+console.log("Total Incorrect:", totalIncorrect);
+console.log("Total Attempt:", totalquestionAttempt);
+
+const { data: totalquestions} = await supabase
+  .from("attempted_questions")
+  .select("question_id")
+  .eq("user_id",user.id)
+
+  const totalquestions_length = totalquestions.length;
+
+  const progresscalculate = ( totalquestionAttempt / totalquestions_length )*100;
+  console.log("progresscalculate",progresscalculate)
+
+
+  
+
+if (quizProgressvalueError) {
+  console.error(quizProgressvalueError);
+  return;
+}
+
+const { data: subQuizes, error: subQuizesError } = await supabase
+  .from("sub_quizes")
+  .select("id")
+  .in("id", sub_quiz_ids);
+
+if (subQuizesError) {
+  console.error("Error fetching sub_quizes data:", subQuizesError);
+  return;
+}
+  const subquizids = subQuizes.map((item)=> item.id)
+//  console.log("jdfksdfb",subquizids);
+// const subQuizesCardsWithData = subQuizes.map((subQuizData) => {
+//   const cardId = subQuizData.id;
+//   console.log("cardid",cardId)
+
+//   return {
+//     ...subQuizData,
+//     totalCorrect: totalCorrect, 
+//     totalIncorrect: totalIncorrect, 
+//     cardId: cardId,
+
+//   };
+ 
+// });
+setsubquiz(subQuizes)
+console.log("subquizes", subQuizes);
+setfalsecount(totalIncorrect)
+console.log("total Incorrect", totalIncorrect)
+settruecount(totalCorrect)
+console.log("total correct", totalCorrect)
+setprogress(progresscalculate);
+
+
+
   //   try {
   //     const { data, error } = await supabase.auth.refreshSession();
   //     if (error) {
@@ -231,7 +375,32 @@ const Quiz = () => {
   //   } catch (error) {
   //     console.error("Unexpected error:", error);
   //   }
-  // };
+   };
+
+//  const progress = async () => {
+//   const { data: quizProgressvalue, error: quizProgressvalueError } = await supabase
+//   .from("attempted_questions")
+//   .select("question_id")
+//   .eq("user_id", user.id)
+
+//   console.log("progress length", quizProgressvalue);
+
+//   if (quizProgressvalueError) {
+//     console.error(quizProgressvalueError);
+//     return;
+//   }
+
+//  }
+
+
+   
+
+   useEffect(() => {
+    fetchTotalQuestionAttempt();
+  }, []);
+  //  useEffect(() => {
+  //   progress();
+  // }, []);
 
 
   const quizUpVoteHandler = async (sub_quiz_id) => {
@@ -334,94 +503,144 @@ const Quiz = () => {
     setSearchQuery(event.target.value);
   };
 
-  const correctfalse = async () => {
-    const { data, error } = await supabase.auth.refreshSession();
-    if (error) {
-      console.log(error);
-      return;
-    }
+//   const correctfalse = async () => {
+//     const { data, error } = await supabase.auth.refreshSession();
+//     if (error) {
+//       console.log(error);
+//       return;
+//     }
 
-    const { user } = data;
-
-    const { data: questions} = await supabase
-    .from("questions")
-    .select("id")
-    
-    const question = questions.map((item)=> item.id)
-    
-    
-    const { data: correctFalseCount, error: correctFalseError } = await supabase
-    .from("attempted_questions")
-    .select("is_correct")
-    .in("question_id",question);
-    console.log(correctFalseCount)
-    
-// const getcount = correctFalseCount.filter((item)=> item.is_correct === true).length
-// const getcountfalse = correctFalseCount.filter((item)=> item.is_correct === false).length
-setfalsecount(getcountfalse);
-settruecount(getcount);
-console.log(getcountfalse);
-
-  if (correctFalseError) {
-    console.log(correctFalseError);
-    setLoading(false);
-    return;
-  }
+//     const { user } = data;
 
     
-  }
-  useEffect(() => {
-correctfalse();
-  },[])
+    
+//     const { data: quizProgress, error: quizProgressError } = await supabase
+//   .from("quiz_progress")
+//   .select("total_correct,total_incorrect,sub_quiz_id")
+//   .eq("user_id", user.id);
+
+// if (quizProgressError) {
+//   console.error(quizProgressError);
+//   return;
+// }
+
+// // Assuming there's only one row for each user in quiz_progress
+//  const totalCorrect = quizProgress.length > 0 ? quizProgress[0].total_correct : 0;
+// const totalinCorrect = quizProgress.length > 0 ? quizProgress[0].total_incorrect : 0;
+// const subquiz_id = quizProgress.map((item)=> item.sub_quiz_id);
+
+
+// console.log("Total inCorrect:", totalinCorrect);
+
+
+// // Fetch sub_quizes data based on subQuizId
+// const { data: subQuizesData, error: subQuizesError } = await supabase
+//   .from("sub_quizes")
+//   .select("id")
+//   .in("id", subquiz_id);
+
+// if (subQuizesError) {
+//   console.error(subQuizesError);
+//   return;
+// }
+
+// // Now you have subQuizesData, which contains data for each sub_quiz
+// // Map over your sub_quizes cards and associate the values
+// const subQuizesCardsWithData = subQuizesData.map((subQuizData) => {
+//   // Assuming you have some logic to identify the corresponding card
+//   // For example, you may have a card with the same id as sub_quiz_id
+//   const cardId = subQuizData.id;
+
+//   return {
+//     ...subQuizData,
+//     totalCorrect: totalCorrect, // Associate the correct value as needed
+//     totalIncorrect: totalinCorrect, // Associate the incorrect value as needed
+//   };
+// });
+// console.log("Sub Quizes Cards with Data:", subQuizesCardsWithData);
+
+        
+   
+  
+
+    
+     
+    
+    
+//     // const question = questions.map((item)=> item.id)
+    
+    
+// //  const getcount = correctFalseCount.filter((item)=> item.is_correct === true).length
+
+// // const getcountfalse = correctFalseCount.filter((item)=> item.is_correct === false).length
+// setfalsecount(totalinCorrect);
+// settruecount(totalCorrect);
+// console.log(getcountfalse);
+
+//   if (correctFalseError) {
+//     console.log(correctFalseError);
+//     setLoading(false);
+//     return;
+//   }
+
+    
+//   }
+//   useEffect(() => {
+// correctfalse();
+//   },[])
 
   return (
-    <div className="pt-10 px-5 md:px-28">
-      <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-[30px] font-bold"></h1>
-        <div className="py-5 md:py-0">
-          <TextInput
-            id="search"
-            type="text"
-            rightIcon={IoIosSearch}
-            placeholder="search"
-            // value={searchQuery}
-             onChange={handleSearch}
-            required
-          />
-        </div>
-      </div>
-      {loading ? (
-        <div className="text-center mt-10">
-          <Spinner color="purple" aria-label="Center-aligned spinner example" />
-        </div>
+<div className="pt-10 px-5 md:px-28">
+  <div className="flex flex-col md:flex-row justify-between items-center">
+    <h1 className="text-[30px] font-bold"></h1>
+    <div className="py-5 md:py-0">
+      <TextInput
+        id="search"
+        type="text"
+        rightIcon={IoIosSearch}
+        placeholder="search"
+        onChange={handleSearch}
+        required
+      />
+    </div>
+  </div>
+  {loading ? (
+    <div className="text-center mt-10">
+      <Spinner color="purple" aria-label="Center-aligned spinner example" />
+    </div>
+  ) : (
+    <div className="my-5">
+      {filteredquizes.length > 0 ? (
+        filteredquizes.map((quiz, index) => {
+          const matchedSubQuiz = subquizes.find(
+            (subQuiz) => subQuiz.id === quiz.id
+          );
+
+          return (
+            <QuizProgressCard
+              falsecount={matchedSubQuiz ? falsecount : 0}
+              truecount={matchedSubQuiz ? truecount : 0}
+              progress={matchedSubQuiz ? progress : 0}
+              data={quiz}
+              key={index}
+              bookmarkCount={matchedSubQuiz ? bookmarkCount : 0}
+              quizUpVoteHandler={quizUpVoteHandler}
+              upvoteLoading={upvoteLoading[quiz.id] || false}
+            />
+          );
+        })
       ) : (
-        <div className="my-5">
-          {filteredquizes.length > 0 ? (
-            filteredquizes.map((quiz, index) => {
-              const isMatched =
-                Array.isArray(subquizesid) && subquizesid.includes(quiz.id);
-              return (
-                <QuizProgressCard
-                falsecount = {falsecount}
-                truecount = {truecount}
-                  data={quiz}
-                  key={index}
-                  bookmarkCount={isMatched ? bookmarkCount : 0}
-                  quizUpVoteHandler={quizUpVoteHandler}
-                  upvoteLoading={upvoteLoading[quiz.id] || false}
-                />
-              );
-            })
-          ) : (
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-6 sm:gap-y-0">
-             <div className="text-center p-3">No quiz found 
-             </div>
-          </div>
-          )}
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-6 sm:gap-y-0">
+          <div className="text-center p-3">No quiz found </div>
         </div>
       )}
-      <LoginModal />
     </div>
+  )}
+  <LoginModal />
+</div>
+
+
+
   );
 };
 
