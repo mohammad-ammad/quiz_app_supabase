@@ -240,19 +240,21 @@ const totalIncorrect = quizProgressvalue.length > 0 ? quizProgressvalue[0].total
 const totalquestionAttempt = quizProgressvalue.length > 0 ? quizProgressvalue[0].total_question_attempt : 0;
 
 
+
 console.log("Total Correct:", totalCorrect);
 console.log("Total Incorrect:", totalIncorrect);
 console.log("Total Attempt:", totalquestionAttempt);
 
 const { data: totalquestions} = await supabase
-  .from("attempted_questions")
-  .select("question_id")
+  .from("quiz_progress")
+  .select("sub_quiz_id")
   .eq("user_id",user.id)
 
-  const totalquestions_length = totalquestions.length;
+  // const totalquestions_length = totalquestions.length;
+  // console.log()
 
-  const progresscalculate = ( totalquestionAttempt / totalquestions_length )*100;
-  console.log("progresscalculate",progresscalculate)
+  // const progresscalculate = ( totalquestionAttempt / totalquestions_length )*100;
+  // console.log("progresscalculate",progresscalculate)
 
 
   
@@ -272,6 +274,14 @@ if (subQuizesError) {
   return;
 }
   const subquizids = subQuizes.map((item)=> item.id)
+  const { data: totalquestionslength } = await supabase
+  .from("questions")
+  .select("question")
+  .eq("sub_quiz_id",subquizids);
+  const totalquestions_length =  totalquestionslength.length;
+  console.log("length", totalquestions_length);
+     const progresscalculate = Math.round(( totalquestionAttempt / totalquestions_length )*100)
+   console.log("progresscalculate",progresscalculate);
 //  console.log("jdfksdfb",subquizids);
 // const subQuizesCardsWithData = subQuizes.map((subQuizData) => {
 //   const cardId = subQuizData.id;

@@ -332,11 +332,9 @@ if (existingAnswer.length > 0) {
             ? quizProgress[0].total_incorrect + 1
             : quizProgress[0].total_incorrect,
           quiz_progress:
-            totalQuestionCount > 0
-              ? Math.round (((quizProgress[0].total_question_attempt + 1)) /
-                  totalQuestionCount) *
-                100
-              : 0,
+          totalQuestionCount > 0
+    ? Math.round(((quizProgress[0].total_question_attempt + 1) / totalQuestionCount) * 100)
+    : 0,
         })
         .eq("user_id", user.id)
         .eq("sub_quiz_id", sub_quiz_id);
