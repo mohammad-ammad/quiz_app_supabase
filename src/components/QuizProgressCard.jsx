@@ -27,10 +27,15 @@ function QuizProgressCard({data, key, bookmarkCount, quizUpVoteHandler, upvoteLo
       </Button>
 
       </div>
+// ammad
+      <p className='text-md text-gray-500'>Progress {Math.floor(data?.stats?.quiz_progress || 0)}%</p>
+      <Progress progress={data?.stats?.quiz_progress || 0} color='indigo' />
+// ahestham
       <p className='text-md text-gray-500'>Progress {progress || 0}%</p>
       <Progress progress={progress || 0} color='indigo' />
       {/* <p className='text-md text-gray-500'>Progress {data?.stats?.quiz_progress || 0}%</p>
       <Progress progress={data?.stats?.quiz_progress || 0} color='indigo' /> */}
+//ahtesham
       <div className='grid grid-cols-1 md:grid-cols-4 gap-2'>
       {/* <Button color="" className='bg-gray-100 border-gray-100'><MdOutlineVideoLibrary className='text-gray-900' /> <span className='ml-2 text-gray-900'>{data?._totalQuestions} Questions</span></Button>
       <Button color="" className='bg-green-200 border-green-200'><TbArrowElbowRight className='text-green-600' /> <span className='ml-2 text-green-600'>{data?.stats?.total_correct || 0}</span></Button>

@@ -51,7 +51,7 @@ const Exams = () => {
     <div className="pt-10">
       <div className=" mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between">
-        <h1 className=" text-lg md:text-xl font-bold">Browes quiz from exams</h1>
+        <h1 className=" text-lg md:text-xl font-bold">Exams List</h1>
         <div className="py-5 md:py-0">
           <TextInput
             id="search"

@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "flowbite-react";
 import React, { useContext, useEffect, useState } from "react";
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch, IoMdChatboxes } from "react-icons/io";
 import { CiBookmark } from "react-icons/ci";
 import { GrHide } from "react-icons/gr";
 import { AiOutlineThunderbolt } from "react-icons/ai";
@@ -17,6 +17,11 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../utils/config";
 import { RxCross2 } from "react-icons/rx";
 import { FaArrowRight, FaCheckSquare, FaStar } from "react-icons/fa";
+import {
+  MdIndeterminateCheckBox,
+  MdOutlineCheckBoxOutlineBlank,
+} from "react-icons/md";
+import { IoChatboxOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 
 const AttemptQuiz = () => {
@@ -26,7 +31,7 @@ const AttemptQuiz = () => {
   const onPageChange = (page) => setCurrentPage(page);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
- 
+
   const { sub_quiz_id } = useParams();
 
   const [isAnswerSelected, setIsAnswerSelected] = useState(false);
@@ -85,7 +90,7 @@ const AttemptQuiz = () => {
         return;
       }
 
-      toast.success('Question Unbookmarked');
+      toast.success("Question Unbookmarked");
 
       // Update state to remove the question from bookmarkedQuestions
       setBookmarkedQuestions((prevBookmarks) =>
@@ -107,7 +112,7 @@ const AttemptQuiz = () => {
         return;
       }
 
-      toast.success('Question Bookmarked');
+      toast.success("Question Bookmarked");
 
       // Update state to add the question to bookmarkedQuestions
       setBookmarkedQuestions((prevBookmarks) => [...prevBookmarks, questionId]);
@@ -204,6 +209,170 @@ const AttemptQuiz = () => {
     setLoading(false);
   };
 
+  // const addUserAnswer = async (
+  //   question_id,
+  //   choice_id,
+  //   correct_ans,
+  //   sub_quiz_id,
+  //   totalQuestionCount
+  // ) => {
+  //   console.log("question", totalQuestionCount);
+  //   setQuestions((prev) => {
+  //     return prev.map((question) => {
+  //       if (question.id === question_id) {
+  //         return {
+  //           ...question,
+  //           user_answer: choice_id,
+  //           user_answer_is_correct: correct_ans,
+  //         };
+  //       }
+  //       return question;
+  //     });
+  //   });
+
+  //   const { data, error } = await supabase.auth.refreshSession();
+  //   if (error) {
+  //     console.log(error);
+  //     return;
+  //   }
+
+  //   const { user } = data;
+
+  //   // Check if the question is already attempted
+  //   const { data: existingAnswer, error: existingAnswerError } = await supabase
+  //     .from("attempted_questions")
+  //     .select("id,is_correct,question_id,user_id")
+  //     .eq("user_id", user.id)
+  //     .eq("question_id", question_id);
+
+  //   const existingAnswers = existingAnswer.map((item) => item.id);
+  //   console.log("existing answerhjvjhj", existingAnswers);
+
+  //   if (existingAnswerError) {
+  //     console.log(existingAnswerError);
+  //     return;
+  //   }
+  //   if (existingAnswer.length > 0) {
+  //     console.log("Updating existing answer...");
+  //     // If the question is already attempted, update the existing answer
+  //     const { error: updateAnswerError } = await supabase
+  //       .from("attempted_questions")
+  //       .update({
+  //         user_answer: choice_id,
+  //         is_correct: correct_ans,
+  //       })
+  //       .in("id", existingAnswers);
+
+  //     if (updateAnswerError) {
+  //       console.log(updateAnswerError);
+  //       return;
+  //     }
+  //     console.log("Existing answer updated successfully!");
+      
+  //   } else {
+  //     console.log("Inserting a new answer...");
+  //     const { error: insertAnswerError } = await supabase
+  //       .from("attempted_questions")
+  //       .insert([
+  //         {
+  //           user_id: user.id,
+  //           question_id,
+  //           user_answer: choice_id,
+  //           is_correct: correct_ans,
+  //         },
+  //       ]);
+
+  //     if (insertAnswerError) {
+  //       console.log(insertAnswerError);
+  //       console.log("New answer inserted successfully!");
+  //       return;
+  //     }
+  //   }
+
+  //   // const { error: userAnswerError } = await supabase
+  //   //   .from("attempted_questions")
+  //   //   .insert([
+  //   //     {
+  //   //       user_id: user.id,
+  //   //       question_id,
+  //   //       user_answer: choice_id,
+  //   //       is_correct: correct_ans,
+  //   //     },
+  //   //   ]);
+
+  //   // if (userAnswerError) {
+  //   //   console.log(userAnswerError);
+  //   //   return;
+  //   // }
+
+  //   // check if quiz progress exists then update else insert
+
+  //   // ammad bhai code
+  //   const { data: quizProgress, error: quizProgressError } = await supabase
+  //     .from("quiz_progress")
+  //     .select("*")
+  //     .eq("user_id", user.id)
+  //     .eq("sub_quiz_id", sub_quiz_id);
+
+  //   if (quizProgressError) {
+  //     console.log(quizProgressError);
+  //     return;
+  //   }
+
+  //   if (quizProgress.length > 0) {
+  //     const { error: updateQuizProgressError } = await supabase
+  //       .from("quiz_progress")
+  //       .update({
+  //         user_id: user.id,
+  //         sub_quiz_id,
+  //         total_question_attempt: quizProgress[0].total_question_attempt + 1,
+  //         total_correct: correct_ans
+  //           ? quizProgress[0].total_correct + 1
+  //           : quizProgress[0].total_correct,
+  //         total_incorrect: !correct_ans
+  //           ? quizProgress[0].total_incorrect + 1
+  //           : quizProgress[0].total_incorrect,
+  //         quiz_progress:
+  //           totalQuestionCount > 0
+  //             ? Math.round(
+  //                 (quizProgress[0].total_question_attempt + 1) /
+  //                   totalQuestionCount
+  //               ) * 100
+  //             : 0,
+  //       })
+  //       .eq("user_id", user.id)
+  //       .eq("sub_quiz_id", sub_quiz_id);
+
+  //     if (updateQuizProgressError) {
+  //       console.log(updateQuizProgressError);
+  //       return;
+  //     }
+  //   } else {
+  //     const { error: insertQuizProgressError } = await supabase
+  //       .from("quiz_progress")
+  //       .insert([
+  //         {
+  //           user_id: user.id,
+  //           sub_quiz_id,
+  //           total_question_attempt: 1,
+  //           total_correct: correct_ans ? 1 : 0,
+  //           total_incorrect: !correct_ans ? 1 : 0,
+  //           quiz_progress:
+  //             totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0,
+  //         },
+  //       ]);
+
+  //     console.log(
+  //       "progress inserted",
+  //       totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0
+  //     );
+  //     if (insertQuizProgressError) {
+  //       console.log(insertQuizProgressError);
+  //       return;
+  //     }
+  //   }
+  // };
+
   const addUserAnswer = async (
     question_id,
     choice_id,
@@ -224,13 +393,13 @@ const AttemptQuiz = () => {
         return question;
       });
     });
-
+  
     const { data, error } = await supabase.auth.refreshSession();
     if (error) {
       console.log(error);
       return;
     }
-
+  
     const { user } = data;
 
       // Check if the question is already attempted
@@ -312,16 +481,18 @@ if (existingAnswer.length > 0) {
       .from("quiz_progress")
       .select("*")
       .eq("user_id", user.id)
-      .eq("sub_quiz_id", sub_quiz_id);
-
-    if (quizProgressError) {
-      console.log(quizProgressError);
+      .eq("question_id", question_id);
+  
+   if (existingAnswerError) {
+      console.log(existingAnswerError);
       return;
     }
 
-    if (quizProgress.length > 0) {
-      const { error: updateQuizProgressError } = await supabase
-        .from("quiz_progress")
+    if(existingAnswer.length > 0){
+      console.log("Updating existing answer...");
+      // If the question is already attempted, update the existing answer
+      const { error: updateAnswerError } = await supabase
+        .from("attempted_questions")
         .update({
           user_id: user.id,
           sub_quiz_id,
@@ -337,43 +508,154 @@ if (existingAnswer.length > 0) {
     ? Math.round(((quizProgress[0].total_question_attempt + 1) / totalQuestionCount) * 100)
     : 0,
         })
-        .eq("user_id", user.id)
-        .eq("sub_quiz_id", sub_quiz_id);
-
-      if (updateQuizProgressError) {
-        console.log(updateQuizProgressError);
+        .eq("id", existingAnswer[0].id);
+  
+      if (updateAnswerError) {
+        console.log(updateAnswerError);
         return;
       }
-    } else {
-      const { error: insertQuizProgressError } = await supabase
-        .from("quiz_progress")
+      console.log("Existing answer updated successfully!");
+
+      /*
+        ! first get all quiz progress with user id and sub quiz id
+        ! now get correct and incorrect 
+        ! then if my selected ans if correct then increment it in the correct one and decrement it from incorrect one and vice versa
+        ! then update the quiz progress only with the correct and incorrect
+      */
+
+      const { data: quizProgress, error: quizProgressError } = await supabase
+      .from("quiz_progress")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("sub_quiz_id", sub_quiz_id);
+
+      if (quizProgressError) {
+        console.log(quizProgressError);
+        return;
+      }
+
+      if (quizProgress.length > 0) {
+        let correct = quizProgress[0].total_correct;
+        let incorrect = quizProgress[0].total_incorrect;
+
+        if(correct_ans){
+          correct = correct + 1;
+          incorrect = incorrect - 1;
+        }
+        else{
+          correct = correct - 1;
+          incorrect = incorrect + 1;
+        }
+
+        const { error: updateQuizProgressError } = await supabase
+          .from("quiz_progress")
+          .update({
+            user_id: user.id,
+            sub_quiz_id,
+            total_correct: correct,
+            total_incorrect: incorrect,
+          })
+          .eq("user_id", user.id)
+          .eq("sub_quiz_id", sub_quiz_id);
+
+        if (updateQuizProgressError) {
+          console.log(updateQuizProgressError);
+          return;
+        }
+      }
+    }else{
+      console.log("Inserting a new answer...");
+      const { error: insertAnswerError } = await supabase
+        .from("attempted_questions")
         .insert([
           {
             user_id: user.id,
-            sub_quiz_id,
-            total_question_attempt: 1,
-            total_correct: correct_ans ? 1 : 0,
-            total_incorrect: !correct_ans ? 1 : 0,
-            quiz_progress:
-              totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0,
+            question_id,
+            user_answer: choice_id,
+            is_correct: correct_ans,
           },
         ]);
-
-      console.log(
-        "progress inserted",
-        totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0
-      );
-      if (insertQuizProgressError) {
-        console.log(insertQuizProgressError);
+  
+      if (insertAnswerError) {
+        console.log(insertAnswerError);
+        console.log("New answer inserted successfully!");
         return;
       }
+
+      // add quiz progress
+      const { data: quizProgress, error: quizProgressError } = await supabase
+      .from("quiz_progress")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("sub_quiz_id", sub_quiz_id);
+
+      console.log("logs", quizProgress)
+
+      if (quizProgressError) {
+        console.log(quizProgressError);
+        return;
+      }
+
+      if (quizProgress.length > 0) {
+        const { error: updateQuizProgressError } = await supabase
+          .from("quiz_progress")
+          .update({
+            user_id: user.id,
+            sub_quiz_id,
+            total_question_attempt: quizProgress[0].total_question_attempt + 1,
+            total_correct: correct_ans
+              ? quizProgress[0].total_correct + 1
+              : quizProgress[0].total_correct,
+            total_incorrect: !correct_ans
+              ? quizProgress[0].total_incorrect + 1
+              : quizProgress[0].total_incorrect,
+            quiz_progress:
+              totalQuestionCount > 0
+                ? Math.round(
+                    (quizProgress[0].total_question_attempt) /
+                      totalQuestionCount
+                  ) * 100
+                : 0,
+          })
+          .eq("user_id", user.id)
+          .eq("sub_quiz_id", sub_quiz_id);
+
+        if (updateQuizProgressError) {
+          console.log(updateQuizProgressError);
+          return;
+        }
+      } else {
+        const { error: insertQuizProgressError } = await supabase
+          .from("quiz_progress")
+          .insert([
+            {
+              user_id: user.id,
+              sub_quiz_id,
+              total_question_attempt: 1,
+              total_correct: correct_ans ? 1 : 0,
+              total_incorrect: !correct_ans ? 1 : 0,
+              quiz_progress:
+                totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0,
+            },
+          ]);
+
+        console.log(
+          "progress inserted",
+          totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0
+        );
+        if (insertQuizProgressError) {
+          console.log(insertQuizProgressError);
+          return;
+        }
+      }
+
     }
+  
   };
-
-
-
-
-  // handly hy question code 
+  
+  
+  
+  // handly hy question code
   const handleHYQuestion = async (qid) => {
     const { data, error } = await supabase.auth.refreshSession();
 
@@ -417,35 +699,26 @@ if (existingAnswer.length > 0) {
       }
     }
 
-    toast.success(`${hy_data.length > 0 ? "Removed" : "Added"} as HY Question`)
+    toast.success(`${hy_data.length > 0 ? "Removed" : "Added"} as HY Question`);
     setQuestions((prev) => {
       return prev.map((question) => {
         if (question.id === qid) {
           return {
             ...question,
-            totalHYVotes: hy_data.length > 0 ? 
-              question.totalHYVotes - 1 : question.totalHYVotes + 1,
+            totalHYVotes:
+              hy_data.length > 0
+                ? question.totalHYVotes - 1
+                : question.totalHYVotes + 1,
           };
         }
         return question;
       });
     });
   };
-  
 
   useEffect(() => {
     fetchQuestions();
   }, [sub_quiz_id]);
-
-
-
-
-
-
-
-
-
-  
 
 
   return (
@@ -480,148 +753,149 @@ if (existingAnswer.length > 0) {
                       <h1 className="text-xl font-semibold my-2">
                         Question {startIndex + index + 1} / {questions.length}
                       </h1>
-                      <p className="text-sm text-gray-500">{question.question}</p>
+                      <p className="text-sm text-gray-500">
+                        {question.question}
+                      </p>
                     </div>
                     {/* Your existing buttons (bookmark, answer, HYQuestion) */}
                     <div className="flex justify-start items-start gap-2 my-2 md:my-0">
-                    <Tooltip
-                      content={
-                        bookmarkedQuestions.includes(question.id)
-                          ? "Bookmarked"
-                          : "Bookmark"
-                      }
-                    >
-                      <Button
-                        className={
+                      <Tooltip
+                        content={
                           bookmarkedQuestions.includes(question.id)
-                            ? "bg-indigo-600"
-                            : ""
+                            ? "Bookmarked"
+                            : "Bookmark"
                         }
-                        color="light"
-                        onClick={() => handleBookmarkClick(question.id)}
                       >
-                        <CiBookmark
-                          size={25}
+                        <Button
                           className={
                             bookmarkedQuestions.includes(question.id)
-                              ? "text-white"
+                              ? "bg-indigo-600"
                               : ""
                           }
-                        />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content="Answer">
-                      <Button
-                        color="light"
-                        onClick={() =>
-                          handleAnswer(
-                            `Question ${index + 1}`,
-                            question.question,
-                            question.choices
-                          )
-                        }
+                          color="light"
+                          onClick={() => handleBookmarkClick(question.id)}
+                        >
+                          <CiBookmark
+                            size={25}
+                            className={
+                              bookmarkedQuestions.includes(question.id)
+                                ? "text-white"
+                                : ""
+                            }
+                          />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip content="Answer">
+                        <Button
+                          color="light"
+                          onClick={() =>
+                            handleAnswer(
+                              `Question ${index + 1}`,
+                              question.question,
+                              question.choices
+                            )
+                          }
+                        >
+                          <GrHide size={25} />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip
+                        content={`${question?.totalHYVotes} votes as HY Question`}
                       >
-                        <GrHide size={25} />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip content={`${question?.totalHYVotes} votes as HY Question`}>
-                      <Button
-                        color="light"
-                        className={
-                          question.totalHYVotes > 0
-                            ? "bg-indigo-600"
-                            : ""
-                        }
-                        onClick={() => handleHYQuestion(question?.id)}
-                      >
-                        <AiOutlineThunderbolt size={25} className={
-                          question.totalHYVotes > 0
-                            ? "text-white"
-                            : ""
-                        } />
-                      </Button>
-                    </Tooltip>
-                  </div>
-                
+                        <Button
+                          color="light"
+                          className={
+                            question.totalHYVotes > 0 ? "bg-indigo-600" : ""
+                          }
+                          onClick={() => handleHYQuestion(question?.id)}
+                        >
+                          <IoChatboxOutline
+                            size={25}
+                            className={
+                              question.totalHYVotes > 0 ? "text-white" : ""
+                            }
+                          />
+                        </Button>
+                      </Tooltip>
+                    </div>
+
                     {/* jkdbjhsdfbksdf */}
                   </div>
                   <div>
                     {question.choices.map((choice, _index) => (
-                 <Button
-                 color={
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? ""
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? ""
-                     : "gray"
-                 }
-                 className={`w-full flex justify-between items-center my-2  ${
-                   question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct
-                     ? "bg-gray-200"
-                     : question.user_answer === choice.c_id &&
-                       !question.user_answer_is_correct
-                     ? "bg-gray-200"
-                     : ""
-                 }`}
-                 rounded
-                 key={_index}
-                 onClick={() => {
-                   if (!question.isAnswerSelected) {
-                     addUserAnswer(
-                       question.id,
-                       choice.c_id,
-                       choice.is_correct,
-                       question.sub_quiz_id,
-                       questions.length
-                     );
-                     setQuestions((prev) => {
-                       return prev.map((q) => {
-                         if (q.id === question.id) {
-                           return {
-                             ...q,
-                             isAnswerSelected: true,
-                           };
-                         }
-                         return q;
-                       });
-                     });
-                   }
-                 }}
-               >
-                 {choice.option}{" "}
-                 {question.user_answer === choice.c_id &&
-                   question.user_answer_is_correct && (
-                     <FaCheckSquare className="text-2xl my-auto text-green-400" />
-                   )}
-                 {question.user_answer === choice.c_id &&
-                   !question.user_answer_is_correct && (
-                     <RxCross2 className="text-2xl my-auto text-red-500" />
-                   )}
-               </Button>
-               
+                      <button
+                        style={{
+                          backgroundColor:
+                            question.user_answer === choice.c_id &&
+                            question.user_answer_is_correct
+                              ? ""
+                              : question.user_answer === choice.c_id &&
+                                !question.user_answer_is_correct
+                              ? ""
+                              : "",
+                        }}
+                        className={`w-full flex justify-start items-center my-2 py-3 px-3 ${
+                          question.user_answer === choice.c_id &&
+                          question.user_answer_is_correct
+                            ? "bg-gray-200"
+                            : question.user_answer === choice.c_id &&
+                              !question.user_answer_is_correct
+                            ? "bg-gray-200"
+                            : "bg-gray-200"
+                        } rounded`}
+                        key={_index}
+                        onClick={() => {
+                          if (!question.isAnswerSelected) {
+                            addUserAnswer(
+                              question.id,
+                              choice.c_id,
+                              choice.is_correct,
+                              question.sub_quiz_id,
+                              questions.length
+                            );
+                          }
+                        }}
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <div>{choice.option}</div>
+                          <div>
+                            {question.user_answer === choice.c_id &&
+                              question.user_answer_is_correct && (
+                                <div className="bg-white py-1 px-3 rounded-md">
+                                  <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+                                </div>
+                              )}
+                            {question.user_answer === choice.c_id &&
+                              !question.user_answer_is_correct && (
+                                <div className="bg-white py-1 px-3 rounded-md">
+                                  <RxCross2 className="text-xl my-auto text-red-500" />
+                                </div>
+                              )}
+                            {question.user_answer !== choice.c_id && (
+                              <div className="bg-white py-1 px-3 rounded-md">
+                                <MdIndeterminateCheckBox className="text-xl my-auto text-gray-300" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
                     ))}
                   </div>
                 </div>
               ))}
-                        <div className="flex justify-center mt-4">
-        <Pagination
-          layout="table"
-          currentPage={currentPage}
-          totalPages={Math.ceil(questions.length / itemsPerPage)}
-          onPageChange={onPageChange}
-        />
-      </div>
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  layout="table"
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(questions.length / itemsPerPage)}
+                  onPageChange={onPageChange}
+                />
+              </div>
             </Card>
           </div>
-
         ) : (
           <div className="text-center py-10">No questions found</div>
         )}
-   
-    
       </div>
       <QuizModal data={isAnswer} />
     </>

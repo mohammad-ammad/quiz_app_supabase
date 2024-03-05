@@ -67,7 +67,7 @@ useEffect(()=> {
           </p>
           <p className="mt-1 flex text-xs leading-5 text-gray-500">
             <Link to={`/quizes/${data.id}`} className="relative truncate hover:underline">
-              {quiz_round_count} Quize Round 
+              {quiz_round_count} {quiz_round_count > 1 ? "Quizes" : "Quiz"}
               {/* {data.total_questions} Questions */}
             </Link>
           </p>
