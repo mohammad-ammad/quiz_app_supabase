@@ -240,8 +240,9 @@ const AttemptQuiz = () => {
   .eq("user_id", user.id)
   .eq("question_id", question_id);
 
- const existingAnswers = existingAnswer.map((item)=> item.id)
-  console.log("existing answerhjvjhj", existingAnswers);
+  const existingAnswers = existingAnswer.map((item)=> item.id)
+  const existingAnswersquestions = existingAnswer.map((item)=> item.question_id)
+  console.log("existing answerhjvjhj", existingAnswer);
 
 if (existingAnswerError) {
   console.log(existingAnswerError);
@@ -271,15 +272,15 @@ if (existingAnswer.length > 0) {
     .insert([
       {
         user_id: user.id,
-        question_id,
+        question_id: question_id,
         user_answer: choice_id,
         is_correct: correct_ans,
       },
     ]);
+    console.log("New answer inserted successfully!");
 
   if (insertAnswerError) {
     console.log(insertAnswerError);
-    console.log("New answer inserted successfully!");
     return;
     
   }
@@ -436,6 +437,15 @@ if (existingAnswer.length > 0) {
     fetchQuestions();
   }, [sub_quiz_id]);
 
+
+
+
+
+
+
+
+
+  
 
 
   return (
