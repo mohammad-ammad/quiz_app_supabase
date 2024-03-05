@@ -401,11 +401,85 @@ const AttemptQuiz = () => {
     }
   
     const { user } = data;
-  
-    // Check if the question is already attempted
-    const { data: existingAnswer, error: existingAnswerError } = await supabase
-      .from("attempted_questions")
-      .select("id, is_correct, question_id, user_id")
+
+      // Check if the question is already attempted
+  const { data: existingAnswer, error: existingAnswerError } = await supabase
+  .from("attempted_questions")
+  .select("id,is_correct,question_id,user_id")
+  .eq("user_id", user.id)
+  .eq("question_id", question_id);
+
+  const existingAnswers = existingAnswer.map((item)=> item.id)
+  const existingAnswersquestions = existingAnswer.map((item)=> item.question_id)
+  console.log("existing answerhjvjhj", existingAnswer);
+
+if (existingAnswerError) {
+  console.log(existingAnswerError);
+  return;
+}
+if (existingAnswer.length > 0) {
+  console.log("Updating existing answer...");
+  // If the question is already attempted, update the existing answer
+  const { error: updateAnswerError } = await supabase
+    .from("attempted_questions")
+    .update({
+      user_answer: choice_id,
+      is_correct: correct_ans,
+    })
+    .in("id", existingAnswers);
+
+  if (updateAnswerError) {
+    console.log(updateAnswerError);
+    return;
+  }
+  console.log("Existing answer updated successfully!");
+} else {
+
+  console.log("Inserting a new answer...");
+  const { error: insertAnswerError } = await supabase
+    .from("attempted_questions")
+    .insert([
+      {
+        user_id: user.id,
+        question_id: question_id,
+        user_answer: choice_id,
+        is_correct: correct_ans,
+      },
+    ]);
+    console.log("New answer inserted successfully!");
+
+  if (insertAnswerError) {
+    console.log(insertAnswerError);
+    return;
+    
+  }
+}
+
+    // const { error: userAnswerError } = await supabase
+    //   .from("attempted_questions")
+    //   .insert([
+    //     {
+    //       user_id: user.id,
+    //       question_id,
+    //       user_answer: choice_id,
+    //       is_correct: correct_ans,
+    //     },
+    //   ]);
+
+    // if (userAnswerError) {
+    //   console.log(userAnswerError);
+    //   return;
+    // }
+
+    // check if quiz progress exists then update else insert
+
+
+
+
+// ammad bhai code
+    const { data: quizProgress, error: quizProgressError } = await supabase
+      .from("quiz_progress")
+      .select("*")
       .eq("user_id", user.id)
       .eq("question_id", question_id);
   
@@ -420,8 +494,19 @@ const AttemptQuiz = () => {
       const { error: updateAnswerError } = await supabase
         .from("attempted_questions")
         .update({
-          user_answer: choice_id,
-          is_correct: correct_ans,
+          user_id: user.id,
+          sub_quiz_id,
+          total_question_attempt: quizProgress[0].total_question_attempt + 1,
+          total_correct: correct_ans
+            ? quizProgress[0].total_correct + 1
+            : quizProgress[0].total_correct,
+          total_incorrect: !correct_ans
+            ? quizProgress[0].total_incorrect + 1
+            : quizProgress[0].total_incorrect,
+          quiz_progress:
+          totalQuestionCount > 0
+    ? Math.round(((quizProgress[0].total_question_attempt + 1) / totalQuestionCount) * 100)
+    : 0,
         })
         .eq("id", existingAnswer[0].id);
   
@@ -634,6 +719,7 @@ const AttemptQuiz = () => {
   useEffect(() => {
     fetchQuestions();
   }, [sub_quiz_id]);
+
 
   return (
     <>
