@@ -34,7 +34,8 @@ const AttemptQuiz = () => {
 
   const { sub_quiz_id } = useParams();
 
-  const [isAnswerSelected, setIsAnswerSelected] = useState(false);
+  const [IsCorrect, setIsCorrect] = useState({});
+   const [IsInCorrect, setIsInCorrect] = useState(false);
 
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
 
@@ -153,6 +154,8 @@ const AttemptQuiz = () => {
       return;
     }
 
+    
+  
     const { data, error: userError } = await supabase.auth.refreshSession();
 
     if (userError) {
@@ -160,6 +163,8 @@ const AttemptQuiz = () => {
       setLoading(false);
       return;
     }
+
+    // commented HY code
 
     const { user } = data;
 
@@ -206,29 +211,18 @@ const AttemptQuiz = () => {
     }
 
     setQuestions(questionsWithUserAnswers);
+ 
+
+
+    
+    //  setQuestions(questionData);
+    
     setLoading(false);
   };
 
-  // const addUserAnswer = async (
-  //   question_id,
-  //   choice_id,
-  //   correct_ans,
-  //   sub_quiz_id,
-  //   totalQuestionCount
-  // ) => {
-  //   console.log("question", totalQuestionCount);
-  //   setQuestions((prev) => {
-  //     return prev.map((question) => {
-  //       if (question.id === question_id) {
-  //         return {
-  //           ...question,
-  //           user_answer: choice_id,
-  //           user_answer_is_correct: correct_ans,
-  //         };
-  //       }
-  //       return question;
-  //     });
-  //   });
+  // const handleChoiceSelection = async (questionId, selectedChoice) => {
+  //   console.log("selected_choice" , selectedChoice)
+  //   console.log("selected_questionId" , questionId)
 
   //   const { data, error } = await supabase.auth.refreshSession();
   //   if (error) {
@@ -237,141 +231,176 @@ const AttemptQuiz = () => {
   //   }
 
   //   const { user } = data;
+  //   console.log("user is", user.id)
+  //    // Find the question data for the selected question
+  //   const selectedQuestion = questions.find((item) => item.id === questionId);
+  //   console.log("selectedQuestions",selectedQuestion)
+  
+  //   // Check if the selected choice is correct
+    
+  // const isCorrect = selectedChoice === selectedQuestion.correct_choice;
+  // console.log("is Correct", isCorrect)
 
-  //   // Check if the question is already attempted
-  //   const { data: existingAnswer, error: existingAnswerError } = await supabase
-  //     .from("attempted_questions")
-  //     .select("id,is_correct,question_id,user_id")
-  //     .eq("user_id", user.id)
-  //     .eq("question_id", question_id);
 
-  //   const existingAnswers = existingAnswer.map((item) => item.id);
-  //   console.log("existing answerhjvjhj", existingAnswers);
 
-  //   if (existingAnswerError) {
-  //     console.log(existingAnswerError);
-  //     return;
-  //   }
-  //   if (existingAnswer.length > 0) {
-  //     console.log("Updating existing answer...");
-  //     // If the question is already attempted, update the existing answer
-  //     const { error: updateAnswerError } = await supabase
-  //       .from("attempted_questions")
-  //       .update({
-  //         user_answer: choice_id,
-  //         is_correct: correct_ans,
-  //       })
-  //       .in("id", existingAnswers);
 
-  //     if (updateAnswerError) {
-  //       console.log(updateAnswerError);
-  //       return;
-  //     }
-  //     console.log("Existing answer updated successfully!");
-      
-  //   } else {
-  //     console.log("Inserting a new answer...");
-  //     const { error: insertAnswerError } = await supabase
-  //       .from("attempted_questions")
-  //       .insert([
+
+
+  
+  
+  // //   // Update the attempted_question table
+  //   const { data: insertData, error: insertError } = await supabase
+  //     .from("attempted_question")
+  //     .insert(
+  //       [
   //         {
-  //           user_id: user.id,
-  //           question_id,
-  //           user_answer: choice_id,
-  //           is_correct: correct_ans,
+  //            user_id: user.id, // Assuming you have the user's ID
+  //           question_id: questionId,
+  //           is_correct: isCorrect,
   //         },
-  //       ]);
-
-  //     if (insertAnswerError) {
-  //       console.log(insertAnswerError);
-  //       console.log("New answer inserted successfully!");
-  //       return;
-  //     }
-  //   }
-
-  //   // const { error: userAnswerError } = await supabase
-  //   //   .from("attempted_questions")
-  //   //   .insert([
-  //   //     {
-  //   //       user_id: user.id,
-  //   //       question_id,
-  //   //       user_answer: choice_id,
-  //   //       is_correct: correct_ans,
-  //   //     },
-  //   //   ]);
-
-  //   // if (userAnswerError) {
-  //   //   console.log(userAnswerError);
-  //   //   return;
-  //   // }
-
-  //   // check if quiz progress exists then update else insert
-
-  //   // ammad bhai code
-  //   const { data: quizProgress, error: quizProgressError } = await supabase
-  //     .from("quiz_progress")
-  //     .select("*")
-  //     .eq("user_id", user.id)
-  //     .eq("sub_quiz_id", sub_quiz_id);
-
-  //   if (quizProgressError) {
-  //     console.log(quizProgressError);
-  //     return;
-  //   }
-
-  //   if (quizProgress.length > 0) {
-  //     const { error: updateQuizProgressError } = await supabase
-  //       .from("quiz_progress")
-  //       .update({
-  //         user_id: user.id,
-  //         sub_quiz_id,
-  //         total_question_attempt: quizProgress[0].total_question_attempt + 1,
-  //         total_correct: correct_ans
-  //           ? quizProgress[0].total_correct + 1
-  //           : quizProgress[0].total_correct,
-  //         total_incorrect: !correct_ans
-  //           ? quizProgress[0].total_incorrect + 1
-  //           : quizProgress[0].total_incorrect,
-  //         quiz_progress:
-  //           totalQuestionCount > 0
-  //             ? Math.round(
-  //                 (quizProgress[0].total_question_attempt + 1) /
-  //                   totalQuestionCount
-  //               ) * 100
-  //             : 0,
-  //       })
-  //       .eq("user_id", user.id)
-  //       .eq("sub_quiz_id", sub_quiz_id);
-
-  //     if (updateQuizProgressError) {
-  //       console.log(updateQuizProgressError);
-  //       return;
-  //     }
-  //   } else {
-  //     const { error: insertQuizProgressError } = await supabase
-  //       .from("quiz_progress")
-  //       .insert([
-  //         {
-  //           user_id: user.id,
-  //           sub_quiz_id,
-  //           total_question_attempt: 1,
-  //           total_correct: correct_ans ? 1 : 0,
-  //           total_incorrect: !correct_ans ? 1 : 0,
-  //           quiz_progress:
-  //             totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0,
-  //         },
-  //       ]);
-
-  //     console.log(
-  //       "progress inserted",
-  //       totalQuestionCount > 0 ? (1 / totalQuestionCount) * 100 : 0
+  //       ],
   //     );
-  //     if (insertQuizProgressError) {
-  //       console.log(insertQuizProgressError);
-  //       return;
-  //     }
+  
+  //   if (insertError) {
+  //     console.error(insertError);
+  //     return;
   //   }
-  // };
+  
+  //   // Handle success, e.g., update UI state
+  //   console.log("Attempted question inserted:");
+  //  };
+
+
+  const handleChoiceSelection = async (questionId, selectedChoice) => {
+    console.log("selected_choice", selectedChoice);
+    console.log("selected_questionId", questionId);
+  
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.log(error);
+      return;
+    }
+  
+    const { user } = data;
+    console.log("user is", user.id);
+    const selectedQuestion = questions.find((item) => item.id === questionId);
+    const isCorrect = selectedChoice === selectedQuestion.correct_choice;
+        // Set state for each button individually
+        setIsCorrect((prevIsCorrect) => ({
+          ...prevIsCorrect,
+          [questionId]: isCorrect,
+        }));
+    // console.log("is correct", isCorrect)
+    // if(isCorrect == true){
+    //   setIsCorrect(isCorrect);
+    // }
+    // else{
+    //   setIsInCorrect(isCorrect);
+     
+    // }
+    
+  
+    // Check if the record already exists
+    const { data: existingRecord, error: selectError } = await supabase
+      .from("attempted_questions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("question_id", questionId);
+  
+    if (selectError) {
+      console.error(selectError);
+      return;
+    }
+  
+    if (existingRecord.length > 0) {
+      // Record exists, perform update
+      const { data: updateData, error: updateError } = await supabase
+        .from("attempted_questions")
+        .update({ is_correct:  isCorrect })
+        .eq("user_id", user.id)
+        .eq("question_id", questionId);
+  
+      if (updateError) {
+        console.error(updateError);
+        return;
+      }
+  
+      console.log("Record updated:", updateData);
+    } else {
+      // // Record doesn't exist, perform insert
+      const { data: insertData, error: insertError } = await supabase
+        .from("attempted_questions")
+        .insert([
+          {
+            user_id: user.id,
+            question_id: questionId,
+            is_correct: isCorrect,
+          },
+        ]);
+  
+      if (insertError) {
+        console.error(insertError);
+        return;
+      }
+  
+      console.log("Record inserted:", insertData);
+      
+    }
+
+    setQuestions(prevQuestions => {
+      return prevQuestions.map(question => {
+        if (question.id === questionId) {
+          // Update the isCorrect property for the selected question
+          return {
+            ...question,
+            isCorrect: selectedChoice === question.correct_choice,
+          };
+        }
+        return question;
+      });
+    });
+  };
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // insert code end here 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   const addUserAnswer = async (
     question_id,
@@ -454,27 +483,6 @@ if (existingAnswer.length > 0) {
     
   }
 }
-
-    // const { error: userAnswerError } = await supabase
-    //   .from("attempted_questions")
-    //   .insert([
-    //     {
-    //       user_id: user.id,
-    //       question_id,
-    //       user_answer: choice_id,
-    //       is_correct: correct_ans,
-    //     },
-    //   ]);
-
-    // if (userAnswerError) {
-    //   console.log(userAnswerError);
-    //   return;
-    // }
-
-    // check if quiz progress exists then update else insert
-
-
-
 
 // ammad bhai code
     const { data: quizProgress, error: quizProgressError } = await supabase
@@ -747,6 +755,7 @@ if (existingAnswer.length > 0) {
           <div className="my-5">
             <Card className="min-w-full">
               {questions.slice(startIndex, endIndex).map((question, index) => (
+                
                 <div key={index}>
                   <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                     <div>
@@ -822,7 +831,129 @@ if (existingAnswer.length > 0) {
                     {/* jkdbjhsdfbksdf */}
                   </div>
                   <div>
-                    {question.choices.map((choice, _index) => (
+                  <Button
+      color="bg-gray-200"
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
+        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
+      }`}
+      onClick={() => handleChoiceSelection(question.id, question.choice1)}
+    >
+      {question.choice1}
+      {/* {question.choice1 === question.correct_choice && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {question.choice1 !== question.correct_choice &&(
+          <div className="bg-white py-1 px-3 rounded-md">
+              <RxCross2 className="text-xl my-auto text-red-500" />
+          </div>
+        )} */}
+          {IsCorrect[question.id] && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {IsCorrect[question.id] === false && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
+          </div>
+        )}
+    </Button>
+                  <Button
+      color="bg-gray-200"
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
+        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
+      }`}
+      onClick={() => handleChoiceSelection(question.id, question.choice_2)}
+    >
+      {question.choice_2}
+      {/* {question.choice_2 === question.correct_choice && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {question.choice_2 !== question.correct_choice &&(
+          <div className="bg-white py-1 px-3 rounded-md">
+            <RxCross2 className="text-xl my-auto text-red-500" />
+          </div>
+        )} */}
+            {IsCorrect[question.id] && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {IsCorrect[question.id] === false && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
+          </div>
+        )}
+    </Button>
+                  <Button
+      color="bg-gray-200"
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
+        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
+      }`}
+      onClick={() => handleChoiceSelection(question.id, question.choice_3)}
+    >
+      {question.choice_3}
+      {/* {question.choice_3 === question.correct_choice && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {question.choice_3 !== question.correct_choice &&(
+          <div className="bg-white py-1 px-3 rounded-md">
+              <RxCross2 className="text-xl my-auto text-red-500" />
+          </div>
+        )} */}
+               {IsCorrect[question.id] && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {IsCorrect[question.id] === false && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
+          </div>
+        )}
+    </Button>
+                  <Button
+      color="bg-gray-200"
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
+        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
+      }`}
+      onClick={() => handleChoiceSelection(question.id, question.choice_4)}
+    >
+      {question.choice_4}
+
+      {/* {question.choice_4 === question.correct_choice && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {question.choice_4 !== question.correct_choice &&(
+          <div className="bg-white py-1 px-3 rounded-md">
+              <RxCross2 className="text-xl my-auto text-red-500" />
+          </div>
+        )} */}
+           {IsCorrect[question.id] && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+          </div>
+        )}
+        {IsCorrect[question.id] === false && (
+          <div className="bg-white py-1 px-3 rounded-md">
+            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
+          </div>
+        )}
+
+    
+    </Button>
+                  {/* <Button color="bg-gray-300" className="w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-300" onClick={() => handleChoiceSelection(question.id, question.choice_2)}>{question.choice_2}</Button>
+                  <Button color="bg-gray-300" className="w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-300" onClick={() => handleChoiceSelection(question.id, question.choice_3)}>{question.choice_3}</Button>
+                  <Button color="bg-gray-300" className="w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-300" onClick={() => handleChoiceSelection(question.id, question.choice_4)}>{question.choice_4}</Button> */}
+                    {/* {question.choices.map((choice, _index) => (
                       <button
                         style={{
                           backgroundColor:
@@ -879,7 +1010,7 @@ if (existingAnswer.length > 0) {
                           </div>
                         </div>
                       </button>
-                    ))}
+                    ))} */}
                   </div>
                 </div>
               ))}
