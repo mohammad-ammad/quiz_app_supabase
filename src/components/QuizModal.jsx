@@ -4,6 +4,7 @@ import GlobalContext from "../context/GlobalContext";
 import { IoIosSearch } from "react-icons/io";
 
 function QuizModal({ data }) {
+  const { question_no, question, allChoices,correct_choice } = data;
   const {
     openQuizAnswerModal: openModal,
     setOpenQuizAnswerModal: setOpenModal,
@@ -12,22 +13,22 @@ function QuizModal({ data }) {
   return (
     <>
       <Modal show={openModal} size={"xl"} onClose={() => setOpenModal(false)}>
-        <Modal.Header>{data?.question_no}</Modal.Header>
+        <Modal.Header>{question_no}</Modal.Header>
         <Modal.Body>
           <div className="space-y-6 px-1 py-2">
-            <p className="text-sm text-gray-500">{data?.question}</p>
-            {data?.allChoices.map((choice, index) => (
-              <Button
-                color={choice?.is_correct ? "purple" : "gray"}
-                className={`w-full flex justify-start items-center my-2 ${
-                  choice?.isCorrect && "bg-indigo-500"
-                }`}
-                rounded
-                key={index}
-              >
-                {choice.option}
-              </Button>
-            ))}
+            <p className="text-sm text-gray-500">{question}</p>
+            {allChoices.map((choice, index) => (
+        <Button
+          key={index}
+          color={" "}
+          className={`w-full flex justify-start items-center my-2  bg-gray-200 
+        ${choice === correct_choice ? 'bg-blue-400':'bg-gray-200'}
+`}
+          rounded
+        >
+          {choice}
+        </Button>
+      ))}
 
             <div className="py-2">
               <TextInput

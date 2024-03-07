@@ -34,7 +34,9 @@ const AttemptQuiz = () => {
 
   const { sub_quiz_id } = useParams();
 
-  const [IsCorrect, setIsCorrect] = useState({});
+  // const [IsCorrect, setIsCorrect] = useState('');
+  // console.log("is Correct abcd", IsCorrect);
+  const [isCorrectMap, setIsCorrectMap] = useState({});
    const [IsInCorrect, setIsInCorrect] = useState(false);
 
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
@@ -126,17 +128,19 @@ const AttemptQuiz = () => {
     question_no: "",
     question: "",
     allChoices: [],
+    correct_choice:""
   });
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleAnswer = (question_no, question, choices) => {
+  const handleAnswer = (question_no, question, choice1, choice2, choice3, choice4,correct_choice) => {
     setOpenQuizAnswerModal(true);
     setIsAnswer({
       question_no,
       question,
-      allChoices: choices,
+      allChoices: [choice1, choice2, choice3, choice4],
+      correct_choice:correct_choice
     });
   };
 
@@ -286,18 +290,33 @@ const AttemptQuiz = () => {
     const selectedQuestion = questions.find((item) => item.id === questionId);
     const isCorrect = selectedChoice === selectedQuestion.correct_choice;
         // Set state for each button individually
-        setIsCorrect((prevIsCorrect) => ({
-          ...prevIsCorrect,
-          [questionId]: isCorrect,
-        }));
-    // console.log("is correct", isCorrect)
-    // if(isCorrect == true){
-    //   setIsCorrect(isCorrect);
-    // }
-    // else{
-    //   setIsInCorrect(isCorrect);
-     
-    // }
+        // setIsCorrect((prevIsCorrect) => ({
+        //   ...prevIsCorrect,
+        //   [questionId]: isCorrect,
+        // }));
+
+
+
+
+        // Update the state with the correctness of the selected question
+  setIsCorrectMap((prevMap) => ({
+    ...prevMap,
+    [questionId]: isCorrect,
+  }));
+
+
+
+
+
+
+        
+       
+          // setIsCorrect(isCorrect);
+    
+      
+        
+      
+
     
   
     // Check if the record already exists
@@ -360,6 +379,8 @@ const AttemptQuiz = () => {
       });
     });
   };
+  console.log("is map is", isCorrectMap);
+
   
   
 
@@ -753,9 +774,19 @@ if (existingAnswer.length > 0) {
           </div>
         ) : questions.length > 0 ? (
           <div className="my-5">
+        
             <Card className="min-w-full">
-              {questions.slice(startIndex, endIndex).map((question, index) => (
+              {questions.slice(startIndex, endIndex).map((question, index) => {
+                const matchcorrect1 = question.choice1 === question.correct_choice
+                const matchcorrect_2 = question.choice_2 === question.correct_choice
+                const matchcorrect_3 = question.choice_3 === question.correct_choice
+                const matchcorrect_4 = question.choice_4 === question.correct_choice
+                // console.log("is matching", matchcorrect1)
+                // console.log("is not  matching", matchcorrect_2)
+                // console.log("is not  matching", matchcorrect_3)
+                // console.log("is not  matching", matchcorrect_4)
                 
+                return(                
                 <div key={index}>
                   <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                     <div>
@@ -799,9 +830,14 @@ if (existingAnswer.length > 0) {
                           color="light"
                           onClick={() =>
                             handleAnswer(
-                              `Question ${index + 1}`,
+                              `Question`,
                               question.question,
-                              question.choices
+                              // question.choices
+                              question.choice1,
+                              question.choice_2,
+                              question.choice_3,
+                              question.choice_4,
+                              question.correct_choice
                             )
                           }
                         >
@@ -830,15 +866,28 @@ if (existingAnswer.length > 0) {
 
                     {/* jkdbjhsdfbksdf */}
                   </div>
+                    {/* Log the value of trueans */}
                   <div>
+               {/* {console.log("user is",question.choice1 === question.correct_choice)} */}
+              
                   <Button
       color="bg-gray-200"
-      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
-        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
-      }`}
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 `}
       onClick={() => handleChoiceSelection(question.id, question.choice1)}
     >
       {question.choice1}
+      
+      {isCorrectMap[question.id] === matchcorrect1 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+  </div>
+)}
+
+{isCorrectMap[question.id] !== matchcorrect1 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <RxCross2 className="text-xl my-auto text-red-500" />
+  </div>
+)}
       {/* {question.choice1 === question.correct_choice && (
           <div className="bg-white py-1 px-3 rounded-md">
             <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
@@ -849,22 +898,11 @@ if (existingAnswer.length > 0) {
               <RxCross2 className="text-xl my-auto text-red-500" />
           </div>
         )} */}
-          {IsCorrect[question.id] && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
-          </div>
-        )}
-        {IsCorrect[question.id] === false && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
-          </div>
-        )}
+ 
     </Button>
                   <Button
       color="bg-gray-200"
-      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
-        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
-      }`}
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 `}
       onClick={() => handleChoiceSelection(question.id, question.choice_2)}
     >
       {question.choice_2}
@@ -878,22 +916,23 @@ if (existingAnswer.length > 0) {
             <RxCross2 className="text-xl my-auto text-red-500" />
           </div>
         )} */}
-            {IsCorrect[question.id] && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
-          </div>
-        )}
-        {IsCorrect[question.id] === false && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
-          </div>
-        )}
+
+{isCorrectMap[question.id] === matchcorrect_2 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+  </div>
+)}
+
+{isCorrectMap[question.id] !== matchcorrect_2 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <RxCross2 className="text-xl my-auto text-red-500" />
+  </div>
+)}
+    
     </Button>
                   <Button
       color="bg-gray-200"
-      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
-        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
-      }`}
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 `}
       onClick={() => handleChoiceSelection(question.id, question.choice_3)}
     >
       {question.choice_3}
@@ -907,22 +946,22 @@ if (existingAnswer.length > 0) {
               <RxCross2 className="text-xl my-auto text-red-500" />
           </div>
         )} */}
-               {IsCorrect[question.id] && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
-          </div>
-        )}
-        {IsCorrect[question.id] === false && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
-          </div>
-        )}
+      {isCorrectMap[question.id] === matchcorrect_3 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+  </div>
+)}
+
+{isCorrectMap[question.id] !== matchcorrect_3 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <RxCross2 className="text-xl my-auto text-red-500" />
+  </div>
+)}
+      
     </Button>
                   <Button
       color="bg-gray-200"
-      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200 ${
-        IsCorrect[question.id] ? 'correct-answer' : IsCorrect[question.id] === false ? 'incorrect-answer' : ''
-      }`}
+      className={`w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-200`}
       onClick={() => handleChoiceSelection(question.id, question.choice_4)}
     >
       {question.choice_4}
@@ -937,18 +976,17 @@ if (existingAnswer.length > 0) {
               <RxCross2 className="text-xl my-auto text-red-500" />
           </div>
         )} */}
-           {IsCorrect[question.id] && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
-          </div>
-        )}
-        {IsCorrect[question.id] === false && (
-          <div className="bg-white py-1 px-3 rounded-md">
-            <MdIndeterminateCheckBox className="text-xl my-auto text-red-500" />
-          </div>
-        )}
+      {isCorrectMap[question.id] === matchcorrect_4 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <FaCheckSquare className="text-xl my-auto text-green-400 font-bold" />
+  </div>
+)}
 
-    
+{isCorrectMap[question.id] !== matchcorrect_4 && (
+  <div className="bg-white py-1 px-3 rounded-md">
+    <RxCross2 className="text-xl my-auto text-red-500" />
+  </div>
+)}
     </Button>
                   {/* <Button color="bg-gray-300" className="w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-300" onClick={() => handleChoiceSelection(question.id, question.choice_2)}>{question.choice_2}</Button>
                   <Button color="bg-gray-300" className="w-full flex justify-start items-center my-2 py-3 px-3 bg-gray-300" onClick={() => handleChoiceSelection(question.id, question.choice_3)}>{question.choice_3}</Button>
@@ -1013,7 +1051,8 @@ if (existingAnswer.length > 0) {
                     ))} */}
                   </div>
                 </div>
-              ))}
+                )
+})}
               <div className="flex justify-center mt-4">
                 <Pagination
                   layout="table"
